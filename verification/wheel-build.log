@@ -1,0 +1,197 @@
+/Users/slavaz/crumb-format/.venv-standalone/lib/python3.12/site-packages/setuptools/config/_apply_pyprojecttoml.py:82: SetuptoolsDeprecationWarning: `project.license` as a TOML table is deprecated
+!!
+
+        ********************************************************************************
+        Please use a simple string containing a SPDX expression for `project.license`. You can also use `project.license-files`. (Both options available on setuptools>=77.0.0).
+
+        By 2027-Feb-18, you need to update your project and remove deprecated calls
+        or your builds will no longer be supported.
+
+        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+        ********************************************************************************
+
+!!
+  corresp(dist, value, root_dir)
+running bdist_wheel
+running build
+running build_py
+creating build/lib/brainsnn_video
+copying brainsnn_video/__init__.py -> build/lib/brainsnn_video
+copying brainsnn_video/__main__.py -> build/lib/brainsnn_video
+creating build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/bench_scaling_honest.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/ssm_lite.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/ssm_quat.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/video_vae.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/wfvideo_quat.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/rollout_training.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/__init__.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/long_eval.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/encode_videos.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/data_occlusion.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/render_rollout.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/latent_ae.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/wfvideo.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/sanity_check.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/long_horizon.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/kernels2d_smoke.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/eval_only.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/recall_probe.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/data_waves.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/train_compare.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/train_long.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/semantic_metrics.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/bench_eager_mix.py -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/data.py -> build/lib/brainsnn_video/engine
+creating build/lib/brainsnn_video/engine/tests
+copying brainsnn_video/engine/tests/test_long_horizon.py -> build/lib/brainsnn_video/engine/tests
+copying brainsnn_video/engine/tests/__init__.py -> build/lib/brainsnn_video/engine/tests
+copying brainsnn_video/engine/tests/test_rollout_training.py -> build/lib/brainsnn_video/engine/tests
+copying brainsnn_video/engine/tests/test_stateful.py -> build/lib/brainsnn_video/engine/tests
+creating build/lib/brainsnn_video/engine/v1_backup
+copying brainsnn_video/engine/v1_backup/__init__.py -> build/lib/brainsnn_video/engine/v1_backup
+copying brainsnn_video/engine/v1_backup/wfvideo.py -> build/lib/brainsnn_video/engine/v1_backup
+creating build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/observation.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/run.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/test_protocol.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/test_train.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/test_observation.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/protocol.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/__init__.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/train.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/test_adapters.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/adapters.py -> build/lib/brainsnn_video/engine/observation_memory_v2
+running egg_info
+creating brainsnn_video.egg-info
+writing brainsnn_video.egg-info/PKG-INFO
+writing dependency_links to brainsnn_video.egg-info/dependency_links.txt
+writing entry points to brainsnn_video.egg-info/entry_points.txt
+writing requirements to brainsnn_video.egg-info/requires.txt
+writing top-level names to brainsnn_video.egg-info/top_level.txt
+writing manifest file 'brainsnn_video.egg-info/SOURCES.txt'
+reading manifest file 'brainsnn_video.egg-info/SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file 'brainsnn_video.egg-info/SOURCES.txt'
+copying brainsnn_video/snapshot.json -> build/lib/brainsnn_video
+copying brainsnn_video/engine/run_long_horizon.sh -> build/lib/brainsnn_video/engine
+copying brainsnn_video/engine/observation_memory_v2/GPU_TEST_PLAN.json -> build/lib/brainsnn_video/engine/observation_memory_v2
+copying brainsnn_video/engine/observation_memory_v2/REAL_CLIP_GATE.md -> build/lib/brainsnn_video/engine/observation_memory_v2
+warning: build_py: byte-compiling is disabled, skipping.
+
+installing to build/bdist.macosx-11.0-arm64/wheel
+running install
+running install_lib
+creating build/bdist.macosx-11.0-arm64/wheel
+creating build/bdist.macosx-11.0-arm64/wheel/brainsnn_video
+copying build/lib/brainsnn_video/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video
+copying build/lib/brainsnn_video/snapshot.json -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video
+creating build/bdist.macosx-11.0-arm64/wheel/brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/bench_scaling_honest.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/ssm_lite.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/ssm_quat.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/run_long_horizon.sh -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/video_vae.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/wfvideo_quat.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+creating build/bdist.macosx-11.0-arm64/wheel/brainsnn_video/engine/tests
+copying build/lib/brainsnn_video/engine/tests/test_long_horizon.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/tests
+copying build/lib/brainsnn_video/engine/tests/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/tests
+copying build/lib/brainsnn_video/engine/tests/test_rollout_training.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/tests
+copying build/lib/brainsnn_video/engine/tests/test_stateful.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/tests
+copying build/lib/brainsnn_video/engine/rollout_training.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/long_eval.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/encode_videos.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/data_occlusion.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+creating build/bdist.macosx-11.0-arm64/wheel/brainsnn_video/engine/v1_backup
+copying build/lib/brainsnn_video/engine/v1_backup/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/v1_backup
+copying build/lib/brainsnn_video/engine/v1_backup/wfvideo.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/v1_backup
+copying build/lib/brainsnn_video/engine/render_rollout.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/latent_ae.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/wfvideo.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/sanity_check.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/long_horizon.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/kernels2d_smoke.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/eval_only.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/recall_probe.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/data_waves.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/train_compare.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+creating build/bdist.macosx-11.0-arm64/wheel/brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/observation.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/run.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/test_protocol.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/test_train.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/test_observation.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/protocol.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/GPU_TEST_PLAN.json -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/train.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/test_adapters.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/REAL_CLIP_GATE.md -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/observation_memory_v2/adapters.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine/observation_memory_v2
+copying build/lib/brainsnn_video/engine/train_long.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/semantic_metrics.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/bench_eager_mix.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/engine/data.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video/engine
+copying build/lib/brainsnn_video/__main__.py -> build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video
+warning: install_lib: byte-compiling is disabled, skipping.
+
+running install_egg_info
+Copying brainsnn_video.egg-info to build/bdist.macosx-11.0-arm64/wheel/./brainsnn_video-0.1.0-py3.12.egg-info
+running install_scripts
+creating build/bdist.macosx-11.0-arm64/wheel/brainsnn_video-0.1.0.dist-info/WHEEL
+creating '/Users/slavaz/Documents/Codex/2026-09-08/go/brainsnn-video/dist/.tmp-8lljrss7/brainsnn_video-0.1.0-py3-none-any.whl' and adding 'build/bdist.macosx-11.0-arm64/wheel' to it
+adding 'brainsnn_video/__init__.py'
+adding 'brainsnn_video/__main__.py'
+adding 'brainsnn_video/snapshot.json'
+adding 'brainsnn_video/engine/__init__.py'
+adding 'brainsnn_video/engine/bench_eager_mix.py'
+adding 'brainsnn_video/engine/bench_scaling_honest.py'
+adding 'brainsnn_video/engine/data.py'
+adding 'brainsnn_video/engine/data_occlusion.py'
+adding 'brainsnn_video/engine/data_waves.py'
+adding 'brainsnn_video/engine/encode_videos.py'
+adding 'brainsnn_video/engine/eval_only.py'
+adding 'brainsnn_video/engine/kernels2d_smoke.py'
+adding 'brainsnn_video/engine/latent_ae.py'
+adding 'brainsnn_video/engine/long_eval.py'
+adding 'brainsnn_video/engine/long_horizon.py'
+adding 'brainsnn_video/engine/recall_probe.py'
+adding 'brainsnn_video/engine/render_rollout.py'
+adding 'brainsnn_video/engine/rollout_training.py'
+adding 'brainsnn_video/engine/run_long_horizon.sh'
+adding 'brainsnn_video/engine/sanity_check.py'
+adding 'brainsnn_video/engine/semantic_metrics.py'
+adding 'brainsnn_video/engine/ssm_lite.py'
+adding 'brainsnn_video/engine/ssm_quat.py'
+adding 'brainsnn_video/engine/train_compare.py'
+adding 'brainsnn_video/engine/train_long.py'
+adding 'brainsnn_video/engine/video_vae.py'
+adding 'brainsnn_video/engine/wfvideo.py'
+adding 'brainsnn_video/engine/wfvideo_quat.py'
+adding 'brainsnn_video/engine/observation_memory_v2/GPU_TEST_PLAN.json'
+adding 'brainsnn_video/engine/observation_memory_v2/REAL_CLIP_GATE.md'
+adding 'brainsnn_video/engine/observation_memory_v2/__init__.py'
+adding 'brainsnn_video/engine/observation_memory_v2/adapters.py'
+adding 'brainsnn_video/engine/observation_memory_v2/observation.py'
+adding 'brainsnn_video/engine/observation_memory_v2/protocol.py'
+adding 'brainsnn_video/engine/observation_memory_v2/run.py'
+adding 'brainsnn_video/engine/observation_memory_v2/test_adapters.py'
+adding 'brainsnn_video/engine/observation_memory_v2/test_observation.py'
+adding 'brainsnn_video/engine/observation_memory_v2/test_protocol.py'
+adding 'brainsnn_video/engine/observation_memory_v2/test_train.py'
+adding 'brainsnn_video/engine/observation_memory_v2/train.py'
+adding 'brainsnn_video/engine/tests/__init__.py'
+adding 'brainsnn_video/engine/tests/test_long_horizon.py'
+adding 'brainsnn_video/engine/tests/test_rollout_training.py'
+adding 'brainsnn_video/engine/tests/test_stateful.py'
+adding 'brainsnn_video/engine/v1_backup/__init__.py'
+adding 'brainsnn_video/engine/v1_backup/wfvideo.py'
+adding 'brainsnn_video-0.1.0.dist-info/licenses/LICENSE'
+adding 'brainsnn_video-0.1.0.dist-info/METADATA'
+adding 'brainsnn_video-0.1.0.dist-info/WHEEL'
+adding 'brainsnn_video-0.1.0.dist-info/entry_points.txt'
+adding 'brainsnn_video-0.1.0.dist-info/top_level.txt'
+adding 'brainsnn_video-0.1.0.dist-info/RECORD'
+removing build/bdist.macosx-11.0-arm64/wheel
+brainsnn_video-0.1.0-py3-none-any.whl

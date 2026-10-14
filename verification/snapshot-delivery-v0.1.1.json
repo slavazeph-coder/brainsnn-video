@@ -1,0 +1,18 @@
+{
+  "status": "prepared_for_publication_with_known_failures",
+  "snapshot_id": "brainsnn-video-local-product-research-20261013-v0.1.1",
+  "version": "0.1.1",
+  "migrated_files": 85,
+  "migrated_bytes": 1028430,
+  "wheel_sha256": "5ca82883c567c9e1c01455e0d4bb8102fbb6fde82037a8c359542c6f678ca404",
+  "known_analytic_failures": 3,
+  "native_720_motion_gate_pass": false,
+  "pretrained_ltx_CPU_encoder_contract_pass": true,
+  "complete_pretrained_preflight_pass": false,
+  "learned_GPU_quality_pass": false,
+  "public_fresh_clone_checked_by_this_agent": false,
+  "publication_requires_root_force_add": [
+    "snapshots/0.1.0/dist/brainsnn_video-0.1.0-py3-none-any.whl"
+  ],
+  "archive_retains_70_original_bound_files": true
+}

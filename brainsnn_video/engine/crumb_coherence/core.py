@@ -1,0 +1,1081 @@
+"""crumb_coherence.core — training-free low-band spectral coherence for long video.
+
+Implements PLUGIN_SPEC_crumb_coherence.md §1, §2, §6. The engine holds a tiny
+rolling anchor over the low-frequency FFT box of the stream and softly blends
+each incoming frame toward it, killing global/low-band drift (exposure, color
+cast, large-scale layout) while leaving motion (low-band *phase*) free.
+
+The recurrence `anchor <- rho*anchor + (1-rho)*A(Xlo)` is literally the
+`z_t = lambda*z_{t-1} + B*x_t` state of wfvideo.py, degenerated to one mode per
+low-k cell (rho == lambda). That is the honest link to the research model; the
+plugin does not import it.
+
+Conventions
+-----------
+* Frames are float tensors in [0,1], shape [C,H,W] (C=3) or [T,C,H,W].
+* rfft2 gives X of shape [C,H,Wf] with Wf = W//2+1. Width holds only the
+  non-negative frequencies (0..W//2), so its low band is a plain [:kw] slice.
+  Height holds the full spectrum (0,1,..,-1), so its low band wraps around: we
+  `fftshift` the height axis, take a centered block, and `ifftshift` back. After
+  the shift, DC sits at box row `kh//2`, box col `0`.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Optional
+
+import torch
+
+EPS = 1e-8
+CUT_COOLDOWN_N = 5      # frames of fast (rho=0.5) adaptation after a soft cut
+CUT_RHO = 0.5
+# Causal alpha-beta trajectory filter gains (M0.6, mc_smooth). beta = a^2/(2-a)
+# is the standard critically-damped pairing for a=0.5. Both are gated by a
+# per-frame phase-coherence confidence in [0,1], so a low-confidence (noisy)
+# measurement moves the filtered path less.
+MC_ALPHA_AB = 0.5
+MC_BETA_AB = MC_ALPHA_AB * MC_ALPHA_AB / (2.0 - MC_ALPHA_AB)   # = 1/6
+
+# --------------------------------------------------------------------------- #
+# Velocity-coherence gate (M3). complex_mc measures the current low band's
+# offset p(t)=(dy,dx) from the (slow) anchor every frame; the frame-to-frame
+# change v(t)=p(t)-p(t-1) is the low-band VELOCITY (the anchor's slow drift
+# cancels in the difference). The M2 trap proved the frozen engine cannot tell a
+# translating subject from wander, because it only ever looks at displacement
+# MAGNITUDE, never at whether that displacement is DIRECTIONALLY PERSISTENT.
+#
+# The gate adds that missing signal. Two leaky integrators over the velocity —
+# one on the VECTOR, one on the SPEED —
+#   s(t)  = mu*s(t-1)  + (1-mu)*v(t)        # net velocity direction (a vector)
+#   sp(t) = mu*sp(t-1) + (1-mu)*||v(t)||    # mean speed (a scalar)
+# give a directional-persistence ratio
+#   C(t)  = ||s(t)|| / (sp(t) + eps)   in [0,1].
+# C -> 1 when every step points the same way (a pan / translation / an
+# accelerating subject — the vector and scalar EMAs agree); C -> 0 when steps
+# cancel because the structure oscillates and RETURNS (wander — what complex_mc
+# exists to kill; its net displacement stays bounded while its path length keeps
+# growing). Using EMAs (not a fixed window) keeps the memory bounded and matches
+# the anchor's own philosophy.
+#
+# Noise: v is differenced from a LIGHTLY SMOOTHED offset p_bar (EMA with decay
+# mc_gate_pos_decay, time-constant ~1-2 frames) rather than the raw estimate.
+# The ratio's numerator ||s|| is a vector mean (per-frame estimator noise
+# cancels), but the denominator sp is a mean of MAGNITUDES (noise biases it up),
+# so a slow-but-straight crawl near the sub-pixel noise floor would otherwise
+# read as incoherent. Smoothing the POSITION kills that 1-frame noise while
+# leaving wander's tens-of-frames oscillation period untouched — so a crawl reads
+# coherent (C->1) yet a fast Lissajous still reverses and reads incoherent (C->0).
+# pos_decay=0 recovers the raw per-frame velocity exactly.
+#
+# The correction is then scaled by g = 1 - smoothstep(lo, hi, C): FULL where the
+# motion is incoherent (C<=lo => g=1), an exact IDENTITY where it is coherent
+# (C>=hi => g=0). g multiplies BOTH the mc pre-shift AND the anchor-blend weight,
+# so a coherent frame is a provable pass-through (g==0 => Xlo_new == Xlo, the
+# whole low band untouched — position, magnitude and any legitimate illumination
+# all preserved). Default OFF (mc_gate=False) => byte-identical to the frozen
+# engine, so every prior invariant and the "old behaviour reachable via a flag"
+# requirement both hold.
+GATE_SPEED_FLOOR = 5e-3     # px/frame; below this there is no motion to protect
+
+
+def _smoothstep(lo: float, hi: float, x: float) -> float:
+    """Hermite smoothstep: 0 for x<=lo, 1 for x>=hi, smooth cubic in between.
+    Degenerate (hi<=lo) becomes a hard step at hi."""
+    if hi <= lo:
+        return 0.0 if x < hi else 1.0
+    t = (x - lo) / (hi - lo)
+    t = 0.0 if t < 0.0 else (1.0 if t > 1.0 else t)
+    return t * t * (3.0 - 2.0 * t)
+
+
+# --------------------------------------------------------------------------- #
+# Color space (§3.1) — decorrelate exposure (Y) from color (Cb,Cr).
+# BT.601 full-range; chroma carries a +0.5 offset so everything stays in [0,1].
+# Operates on [...,3,H,W]; the round-trip is exact up to float32 rounding.
+# --------------------------------------------------------------------------- #
+def rgb_to_ycbcr(x: torch.Tensor) -> torch.Tensor:
+    r, g, b = x.unbind(dim=-3)
+    y = 0.299 * r + 0.587 * g + 0.114 * b
+    cb = -0.168736 * r - 0.331264 * g + 0.5 * b + 0.5
+    cr = 0.5 * r - 0.418688 * g - 0.081312 * b + 0.5
+    return torch.stack((y, cb, cr), dim=-3)
+
+
+def ycbcr_to_rgb(x: torch.Tensor) -> torch.Tensor:
+    y, cb, cr = x.unbind(dim=-3)
+    cb = cb - 0.5
+    cr = cr - 0.5
+    r = y + 1.402 * cr
+    g = y - 0.344136 * cb - 0.714136 * cr
+    b = y + 1.772 * cb
+    return torch.stack((r, g, b), dim=-3)
+
+
+# --------------------------------------------------------------------------- #
+# Low-band box crop / write-back (§2 steps 2 & 5)
+# --------------------------------------------------------------------------- #
+def box_dims(cutoff_frac: float, H: int, W: int) -> tuple[int, int]:
+    """Box half-extents in cells: kh ~= cutoff_frac*H, kw ~= cutoff_frac*W."""
+    kh = max(1, int(round(cutoff_frac * H)))
+    kw = max(1, int(round(cutoff_frac * W)))
+    return kh, kw
+
+
+def _crop_box(X: torch.Tensor, kh: int, kw: int) -> torch.Tensor:
+    """Centered [C,kh,kw] low-band block of an rfft2 tensor X:[C,H,Wf]."""
+    H = X.shape[-2]
+    Xs = torch.fft.fftshift(X, dim=-2)
+    r0 = H // 2 - kh // 2
+    return Xs[..., r0:r0 + kh, :kw]
+
+
+def low_band_box(X: torch.Tensor, cutoff_frac: float) -> torch.Tensor:
+    """Crop the rfft2 tensor to its lowest-frequency [C,kh,kw] box.
+
+    Assumes an even width (W = 2*(Wf-1)); the moving-ball clips here are even.
+    """
+    H, Wf = X.shape[-2], X.shape[-1]
+    W = 2 * (Wf - 1)
+    kh, kw = box_dims(cutoff_frac, H, W)
+    return _crop_box(X, kh, kw)
+
+
+def put_low_band(X: torch.Tensor, Xlo: torch.Tensor) -> torch.Tensor:
+    """Write the [C,kh,kw] low-band box back into a copy of X, out-of-place.
+
+    High-frequency coefficients of X are untouched, so irfft2 reconstructs them
+    to float precision — the plugin only ever moves the low band.
+    """
+    H = X.shape[-2]
+    kh, kw = Xlo.shape[-2], Xlo.shape[-1]
+    Xs = torch.fft.fftshift(X, dim=-2).clone()
+    r0 = H // 2 - kh // 2
+    Xs[..., r0:r0 + kh, :kw] = Xlo
+    return torch.fft.ifftshift(Xs, dim=-2)
+
+
+# --------------------------------------------------------------------------- #
+# Gaussian band weight (§3.3) — 1 at DC, tapering to ~0 by the band edge.
+# DC lives at box (kh//2, 0). sigma is expressed as a fraction of Nyquist:
+# with kh = cutoff_frac*H the Nyquist is kh/(2*cutoff_frac) cells, so
+# sigma_cells = sigma_k_frac * kh / (2*cutoff_frac). cutoff_frac is threaded in
+# (a keyword beyond the four spec params) to keep that mapping physical.
+# --------------------------------------------------------------------------- #
+def gaussian_band_weight(kh: int, kw: int, sigma_k_frac: float,
+                         device="cpu", cutoff_frac: float = 0.10) -> torch.Tensor:
+    dc_row = kh // 2
+    sig_h = max(EPS, sigma_k_frac * kh / (2.0 * cutoff_frac))
+    sig_w = max(EPS, sigma_k_frac * kw / (2.0 * cutoff_frac))
+    i = torch.arange(kh, device=device, dtype=torch.float32).view(kh, 1)
+    j = torch.arange(kw, device=device, dtype=torch.float32).view(1, kw)
+    dy = (i - dc_row) / sig_h
+    dx = j / sig_w                      # DC column is 0
+    return torch.exp(-0.5 * (dy * dy + dx * dx))   # [kh,kw], w(DC)=1
+
+
+# --------------------------------------------------------------------------- #
+# Phase-anchoring band weight (§3.2, M0.2). The Gaussian above is DC-centric —
+# right for exposure/color (magnitude) drift, wrong for *positional* drift. A
+# wandering low-freq structure shifts by p(t): by the shift theorem its low-band
+# coefficients are Â_k·exp(-i k·p(t)) — magnitude ~constant, position living
+# entirely in the phase φ_k = -k·p(t), which GROWS with k. So position lives in
+# the non-DC cells (and most strongly at higher k), exactly where the Gaussian
+# taper is weakest. This companion weight is FLAT across the low band and ZERO at
+# DC (DC carries no position, and re-anchoring it is just more magnitude locking),
+# so phase_anchor>0 pulls the position-carrying cells toward the (near-static)
+# anchor without touching the exposure lock.
+# --------------------------------------------------------------------------- #
+def phase_band_weight(kh: int, kw: int, device="cpu") -> torch.Tensor:
+    wp = torch.ones(kh, kw, device=device, dtype=torch.float32)
+    wp[kh // 2, 0] = 0.0                            # DC cell: no positional info
+    return wp
+
+
+# --------------------------------------------------------------------------- #
+# Motion-compensated anchoring (§3.2, M0.3). The M0.2 falsification showed that
+# blending phase toward the EMA anchor degrades monotonically: the anchor itself
+# lags and wanders, so pulling toward it fights the true signal. MC fixes the
+# frame of reference. By the shift theorem a low-band structure displaced by p(t)
+# has coefficients Â_k·exp(-i 2π k·p) — magnitude flat, position living entirely
+# in a phase ramp linear in k. So we (1) MEASURE p(t) as the sub-pixel offset of
+# the current low band from the (near-static) anchor via low-band phase
+# correlation, then (2) UNDO it with an exact frequency-domain shift, re-centering
+# the wandering bump onto the anchor. Position drift is removed by construction;
+# the blend that follows only has to lock magnitude/shape (no positional fight).
+#
+# We estimate p against the ANCHOR (absolute offset), not by integrating
+# successive-frame velocities: velocity integration re-accumulates exactly the
+# error MC is meant to cancel.
+# --------------------------------------------------------------------------- #
+def _box_freqs(kh: int, kw: int, H: int, W: int, device="cpu"):
+    """Physical frequency (cycles/pixel) of each low-band box cell.
+
+    Height uses the fftshift layout the box lives in: box row r -> DC at kh//2,
+    so ky = (r - kh//2)/H. Width is the rfft low slice: box col c -> kx = c/W.
+    These match the put_low_band / irfft2 conventions exactly, so a phase ramp
+    built here is an exact whole-image translation after write-back.
+    """
+    ky = (torch.arange(kh, device=device, dtype=torch.float32) - kh // 2) / H
+    kx = torch.arange(kw, device=device, dtype=torch.float32) / W
+    return ky.view(kh, 1), kx.view(1, kw)
+
+
+def _parabolic_offset(cm: float, c0: float, cp: float) -> float:
+    """Sub-cell peak offset from a 3-point parabola through (cm, c0, cp).
+
+    Returns a value in (-1, 1); 0 when the samples are flat. This is the standard
+    sub-pixel refinement for a correlation peak.
+    """
+    denom = cm - 2.0 * c0 + cp
+    if abs(denom) < EPS:
+        return 0.0
+    return float(max(-1.0, min(1.0, 0.5 * (cm - cp) / denom)))
+
+
+def estimate_lowband_shift(Xlo: torch.Tensor, anchor: torch.Tensor,
+                           H: int, W: int, exclude_dc: bool = True):
+    """Sub-pixel (dy, dx) translation, in pixels, of the current low band `Xlo`
+    relative to `anchor`, via low-pass phase correlation.
+
+    Cross-power C_k = sum_c Xlo_c · conj(anchor_c) is whitened per cell
+    (C/|C|) — keeping only the phase (the position), discarding magnitude — then
+    written into an otherwise-zero full rfft2 spectrum and inverse-transformed.
+    Because only the low band is populated the correlation surface is smooth
+    (sharp fast-moving balls, spread across the spectrum, contribute almost
+    nothing), so its peak cleanly locates the wandering bump. A 3-point parabolic
+    fit on each axis gives the sub-pixel offset. DC carries no position and is
+    dropped (exclude_dc). Returns (0.0, 0.0) if the anchor is still empty.
+    """
+    kh, kw = Xlo.shape[-2], Xlo.shape[-1]
+    device = Xlo.device
+    if anchor.abs().sum().item() <= EPS:
+        return 0.0, 0.0
+    cross = (Xlo * anchor.conj()).sum(dim=0)             # [kh,kw] collapse channels
+    mag = cross.abs()
+    whitened = cross / (mag + EPS)                        # unit modulus -> phase only
+    if exclude_dc:
+        whitened[kh // 2, 0] = 0.0                        # DC: no positional info
+    Wf = W // 2 + 1
+    full = torch.zeros(1, H, Wf, dtype=torch.complex64, device=device)
+    full = put_low_band(full, whitened.unsqueeze(0))     # place box in full spectrum
+    corr = torch.fft.irfft2(full, s=(H, W))[0]           # [H,W] real surface
+    corr = torch.fft.fftshift(corr)                      # zero-shift -> image centre
+    flat = int(torch.argmax(corr).item())
+    pr, pc = divmod(flat, W)
+    dy = float(pr - H // 2)
+    dx = float(pc - W // 2)
+    if 0 < pr < H - 1:
+        dy += _parabolic_offset(float(corr[pr - 1, pc]), float(corr[pr, pc]),
+                                float(corr[pr + 1, pc]))
+    if 0 < pc < W - 1:
+        dx += _parabolic_offset(float(corr[pr, pc - 1]), float(corr[pr, pc]),
+                                float(corr[pr, pc + 1]))
+    return dy, dx
+
+
+def apply_lowband_shift(Xlo: torch.Tensor, dy: float, dx: float,
+                        H: int, W: int,
+                        taper: Optional[torch.Tensor] = None) -> torch.Tensor:
+    """Translate the low-band content by (dy, dx) pixels via the shift theorem.
+
+    Multiplies each cell by exp(-i 2π (ky·dy + kx·dx)); an exact whole-image
+    translation with no interpolation and no touch to magnitude — so detail
+    (high band) and per-cell energy are preserved, only position moves.
+
+    `taper` (M0.4, optional [kh,kw] in [0,1]): a per-cell fraction of the shift
+    to apply. It scales the *phase* (`exp(-i 2π·taper·(...))`), NOT the amplitude,
+    so every cell stays unit-modulus — the shift is still exactly unitary and
+    magnitude-preserving. With `taper=1` at low k and `->0` at the band edge, the
+    position-carrying (bump) cells are fully re-centered while the detail-carrying
+    edge cells the SSIM high-pass overlaps are left as an exact identity. This is
+    the fix for M0.3's hf_ssim collapse: a rigid full-band ramp rotates those edge
+    cells at full strength (largest phase at highest k); a graded ramp does not.
+    `taper=None` reproduces the exact rigid translation (M0.3 behaviour).
+    """
+    if dy == 0.0 and dx == 0.0:
+        return Xlo
+    kh, kw = Xlo.shape[-2], Xlo.shape[-1]
+    ky, kx = _box_freqs(kh, kw, H, W, device=Xlo.device)
+    phase = ky * dy + kx * dx                             # [kh,kw], cycles
+    if taper is not None:
+        phase = phase * taper                            # graded, still |ramp|=1
+    ramp = torch.exp(-2j * torch.pi * phase).to(Xlo.dtype)  # [kh,kw]
+    return Xlo * ramp
+
+
+# --------------------------------------------------------------------------- #
+# Radial band mask (§3.2, M0.6). The M0.5 E3 experiment showed the decisive win:
+# restrict the re-centering shift to the bump's dominant INNERMOST radial band
+# (r < mc_band cyc/px), leaving the SSIM-overlapping mid/high band an exact
+# identity. The injected bump is a wide Gaussian (energy < ~0.02 cyc/px); the
+# SSIM high-pass ramps in past ~0.06 cyc/px. A hard inner mask at r~0.03 moves the
+# bump while touching NO cell the fidelity gate watches -> drift removed AND
+# hf_ref preserved, the frontier neither the M0.3 rigid ramp (hf dies) nor the
+# M0.4 gaussian taper (drift dies) could reach. The mask multiplies the shift's
+# PHASE only, so every cell stays unit-modulus (magnitude / energy exact).
+#
+# edge="hard"     : 1.0 where r < mc_band, else 0.0  (the E3 mask, verbatim).
+# edge="flat_top" : unity in the interior with a raised-cosine transition of
+#                   width width_frac*mc_band CENTERED on mc_band (Astra's flat-top,
+#                   M0.6) — a smooth band edge that avoids the hard-cut seam while
+#                   still covering the bump's support.
+# --------------------------------------------------------------------------- #
+def radial_band_mask(kh: int, kw: int, H: int, W: int, r_inner: float,
+                     device="cpu", edge: str = "hard",
+                     width_frac: float = 0.3) -> torch.Tensor:
+    """Per-cell weight in [0,1] over the low-band box restricting an mc shift to
+    the innermost radial frequencies r < r_inner (cycles/pixel). See the block
+    comment above for the M0.5 E3 rationale. Returns a real [kh,kw] tensor."""
+    if edge not in ("hard", "flat_top"):
+        raise ValueError(f"unknown edge {edge!r}")
+    ky, kx = _box_freqs(kh, kw, H, W, device=device)     # [kh,1],[1,kw] cyc/px
+    r = torch.sqrt(ky * ky + kx * kx)                     # [kh,kw] broadcast
+    if edge == "hard":
+        return (r < r_inner).to(torch.float32)
+    # flat_top: unity below r1, cosine 1->0 across [r1,r2), zero at/above r2.
+    w = max(EPS, width_frac * r_inner)
+    r1 = r_inner - 0.5 * w
+    r2 = r_inner + 0.5 * w
+    mask = torch.ones_like(r)
+    trans = (r >= r1) & (r < r2)
+    cos_t = 0.5 * (1.0 + torch.cos(torch.pi * (r - r1) / (r2 - r1)))
+    mask = torch.where(trans, cos_t, mask)
+    mask = torch.where(r >= r2, torch.zeros_like(r), mask)
+    return mask.to(torch.float32)
+
+
+# --------------------------------------------------------------------------- #
+# Weighted phase-plane displacement estimate (§3.2, M0.6, Astra). An alternative
+# to the correlation-peak estimator above. By the shift theorem the cross-power
+# phase between the current low band and the (near-static) anchor is LINEAR in
+# frequency: phi_k = angle( sum_c Xlo_c conj(anchor_c) ) ~= -2π(ky·dy + kx·dx).
+# Rather than build a correlation surface and pick its peak, fit the plane
+# (dy, dx) directly by magnitude-weighted Gauss-Newton over the lowest non-DC
+# cells (r < r_fit, where the phase has not wrapped), Huber-reweighted to reject
+# outlier cells. At 32-64px grids there are very few meaningful low-k bins, so a
+# weighted slope fit uses them more efficiently than peak-picking. Sign
+# convention matches estimate_lowband_shift exactly (a +d displacement reads back
+# as +d), so it is a drop-in alternative.
+# --------------------------------------------------------------------------- #
+def _wrap_phase(x: torch.Tensor) -> torch.Tensor:
+    """Wrap radians into (-π, π]."""
+    return x - 2.0 * torch.pi * torch.round(x / (2.0 * torch.pi))
+
+
+def estimate_lowband_shift_phaseplane(Xlo: torch.Tensor, anchor: torch.Tensor,
+                                      H: int, W: int, r_fit: float = 0.06,
+                                      iters: int = 4, exclude_dc: bool = True):
+    """Sub-pixel (dy, dx) px translation of `Xlo` vs `anchor` by weighted
+    phase-plane fitting. See the block comment above. Returns (0.0, 0.0) if the
+    anchor is empty or too few cells are usable.
+
+    The fit is Gauss-Newton on the WRAPPED residual r_k = wrap(phi_k + 2π k·d):
+    starting from d=0 (residual = wrap(phi)), each step solves a 2x2 weighted
+    normal system for the increment and accumulates it. Cells whose true phase
+    exceeded π (large displacement, higher k) wrap and are down-weighted by the
+    Huber term, so the low-k cells (which do not wrap) anchor the estimate.
+    """
+    kh, kw = Xlo.shape[-2], Xlo.shape[-1]
+    device = Xlo.device
+    if anchor.abs().sum().item() <= EPS:
+        return 0.0, 0.0
+    cross = (Xlo * anchor.conj()).sum(dim=0)             # [kh,kw] collapse channels
+    phi = torch.angle(cross)                              # [kh,kw]
+    mag = cross.abs()
+    ky, kx = _box_freqs(kh, kw, H, W, device=device)      # [kh,1],[1,kw]
+    KY = ky.expand(kh, kw)
+    KX = kx.expand(kh, kw)
+    r = torch.sqrt(KY * KY + KX * KX)
+    sel = r < r_fit
+    if exclude_dc:
+        sel = sel & (r > EPS)
+    if int(sel.sum().item()) < 2:
+        return 0.0, 0.0
+    ay = (2.0 * torch.pi * KY[sel])                       # d(phase)/d(dy)
+    ax = (2.0 * torch.pi * KX[sel])
+    ph = phi[sel]
+    mg = mag[sel]
+    dy = dx = 0.0
+    for _ in range(max(1, iters)):
+        resid = _wrap_phase(ph + ay * dy + ax * dx)      # current wrapped residual
+        s = 1.345 * (resid.abs().median() + EPS)         # Huber scale (MAD-ish)
+        ar = resid.abs()
+        hub = torch.where(ar <= s, torch.ones_like(ar), s / (ar + EPS))
+        w = mg * hub
+        Syy = torch.sum(w * ay * ay)
+        Sxx = torch.sum(w * ax * ax)
+        Sxy = torch.sum(w * ay * ax)
+        by = -torch.sum(w * ay * resid)                  # solve for the increment
+        bx = -torch.sum(w * ax * resid)
+        det = Syy * Sxx - Sxy * Sxy
+        if abs(float(det)) < EPS:
+            break
+        ddy = float((by * Sxx - bx * Sxy) / det)
+        ddx = float((Syy * bx - Sxy * by) / det)
+        dy += ddy
+        dx += ddx
+    return dy, dx
+
+
+# --------------------------------------------------------------------------- #
+# EMA anchor update (§2 step 3). First-value initialization (anchor := Xlo on
+# frame 1) removes the warmup bias that a from-zero EMA would need correcting,
+# so this is a plain leaky integrator; n_seen is kept for interface parity.
+# --------------------------------------------------------------------------- #
+def ema_update(anchor: torch.Tensor, x: torch.Tensor, rho: float,
+               n_seen: Optional[int] = None) -> torch.Tensor:
+    return rho * anchor + (1.0 - rho) * x
+
+
+# --------------------------------------------------------------------------- #
+# target_lowband — THE load-bearing §3.2 choice: which low-band content is
+# drift (anchor it) vs motion (leave it free).
+#   complex   : anchor the full complex band  -> strongest, but freezes pans.
+#   magnitude : anchor |low band|, keep the frame's own phase -> fixes
+#               exposure/color-energy drift while motion (phase) stays free.
+#   dc_only   : anchor only the DC cell (global mean per channel) -> a rolling
+#               exposure/white-balance lock; cheapest, most conservative.
+# --------------------------------------------------------------------------- #
+def target_lowband(Xlo: torch.Tensor, anchor: torch.Tensor,
+                   anchor_mode: str) -> torch.Tensor:
+    if anchor_mode in ("complex", "complex_mc"):
+        return anchor
+    if anchor_mode == "magnitude":
+        # Re-inject the anchored magnitude onto the frame's current phase.
+        phasor = Xlo / (Xlo.abs() + EPS)          # unit-modulus, frame's phase
+        return anchor.abs() * phasor
+    if anchor_mode == "dc_only":
+        out = Xlo.clone()
+        dc_row = Xlo.shape[-2] // 2
+        out[..., dc_row, 0] = anchor[..., dc_row, 0]
+        return out
+    raise ValueError(f"unknown anchor_mode {anchor_mode!r}")
+
+
+# --------------------------------------------------------------------------- #
+# Cut detection (§2 step 6)
+# --------------------------------------------------------------------------- #
+def detect_cut(Xlo: torch.Tensor, prev_lowband: torch.Tensor,
+               thresh: float) -> bool:
+    denom = prev_lowband.abs().pow(2).sum().sqrt()
+    if denom <= EPS:
+        return False
+    rel = (Xlo - prev_lowband).abs().pow(2).sum().sqrt() / denom
+    return bool(rel.item() > thresh)
+
+
+# --------------------------------------------------------------------------- #
+# State (§1) — the only persistent memory, and it is tiny.
+# --------------------------------------------------------------------------- #
+@dataclass
+class CoherenceState:
+    anchor: torch.Tensor            # complex [C,kh,kw] — EMA'd low-band box
+    prev_lowband: torch.Tensor      # complex [C,kh,kw] — for cut detection
+    n_seen: int = 0                 # frames folded into the anchor
+    warm: bool = False
+    cut_cooldown: int = 0           # frames of fast adaptation left after a cut
+    H: int = 0
+    W: int = 0
+    # M0.6 mc_smooth: causal alpha-beta trajectory-filter state (used only by
+    # complex_mc + mc_smooth). Position is the estimated (dy, dx) offset of the
+    # wandering bump from the anchor; velocity is its per-frame change. Left at
+    # defaults (and never touched) for every other configuration.
+    mc_pdy: float = 0.0
+    mc_pdx: float = 0.0
+    mc_vdy: float = 0.0
+    mc_vdx: float = 0.0
+    mc_conf: float = 0.0
+    mc_filt_init: bool = False
+    # M3 velocity-coherence gate. gate_p{dy,dx} is the lightly-smoothed low-band
+    # offset p_bar (an EMA of the raw (dy,dx), decay mc_gate_pos_decay); its
+    # frame-to-frame increment is the denoised velocity v. Two leaky integrators
+    # over v (vector gate_s{y,x} + speed gate_sp) yield a directional-persistence
+    # ratio gate_C in [0,1]; the applied correction gate is
+    # gate_g = 1 - smoothstep(lo, hi, gate_C). All inert unless mc_gate is on
+    # (complex_mc); gate_C / gate_g are exposed purely for introspection/diag.
+    gate_pdy: float = 0.0
+    gate_pdx: float = 0.0
+    gate_sy: float = 0.0
+    gate_sx: float = 0.0
+    gate_sp: float = 0.0
+    gate_init: bool = False
+    gate_C: float = 0.0
+    gate_g: float = 1.0
+    # M4/D1 residual anchoring: alpha-beta (constant-velocity) predictor state
+    # for the PREDICT-THEN-CORRECT-THE-RESIDUAL path. res_p* is the filtered
+    # offset, res_v* its per-frame velocity, res_r* the last innovation
+    # (measured minus prediction) and res_f its significance scale in [0,1].
+    # All inert unless mc_residual is on (complex_mc only).
+    res_pdy: float = 0.0
+    res_pdx: float = 0.0
+    res_vdy: float = 0.0
+    res_vdx: float = 0.0
+    res_filt_init: bool = False
+    res_ry: float = 0.0
+    res_rx: float = 0.0
+    res_f: float = 0.0
+
+
+# --------------------------------------------------------------------------- #
+# Spectral engine (§1, orchestrates §2)
+# --------------------------------------------------------------------------- #
+class SpectralCoherenceEngine:
+    def __init__(self,
+                 cutoff_frac: float = 0.10,
+                 sigma_k_frac: float = 0.06,
+                 alpha: float = 0.5,
+                 rho: float = 0.995,
+                 color_space: str = "ycbcr",
+                 anchor_mode: str = "magnitude",
+                 reset_on_cut: bool = True,
+                 cut_thresh: float = 0.35,
+                 phase_anchor: float = 0.0,
+                 mc_strength: float = 0.0,
+                 mc_taper: bool = True,
+                 mc_deadband: float = 1e-2,
+                 mc_band: float = 0.0,
+                 mc_est: str = "corr",
+                 mc_smooth: bool = False,
+                 mc_edge: str = "hard",
+                 mc_gate: bool = False,
+                 mc_gate_lo: float = 0.35,
+                 mc_gate_hi: float = 0.75,
+                 mc_gate_decay: float = 0.9,
+                 mc_gate_pos_decay: float = 0.5,
+                 mc_residual: bool = False,
+                 mc_res_strength: float = 0.5,
+                 mc_res_window: float = 8.0,
+                 mc_res_cutoff: float = 0.25):
+        if anchor_mode not in ("magnitude", "dc_only", "complex", "complex_mc"):
+            raise ValueError(f"unknown anchor_mode {anchor_mode!r}")
+        if color_space not in ("ycbcr", "rgb"):
+            raise ValueError(f"unknown color_space {color_space!r}")
+        if phase_anchor < 0.0:
+            raise ValueError(f"phase_anchor must be >= 0, got {phase_anchor}")
+        if mc_strength < 0.0:
+            raise ValueError(f"mc_strength must be >= 0, got {mc_strength}")
+        if mc_deadband < 0.0:
+            raise ValueError(f"mc_deadband must be >= 0, got {mc_deadband}")
+        if mc_band < 0.0:
+            raise ValueError(f"mc_band must be >= 0, got {mc_band}")
+        if mc_est not in ("corr", "phase_plane"):
+            raise ValueError(f"unknown mc_est {mc_est!r}")
+        if mc_edge not in ("hard", "flat_top"):
+            raise ValueError(f"unknown mc_edge {mc_edge!r}")
+        if not 0.0 <= mc_gate_decay < 1.0:
+            raise ValueError(f"mc_gate_decay must be in [0,1), got {mc_gate_decay}")
+        if not 0.0 <= mc_gate_pos_decay < 1.0:
+            raise ValueError(f"mc_gate_pos_decay must be in [0,1), got "
+                             f"{mc_gate_pos_decay}")
+        if mc_gate_lo < 0.0 or mc_gate_hi < mc_gate_lo:
+            raise ValueError(f"require 0 <= mc_gate_lo <= mc_gate_hi, got "
+                             f"lo={mc_gate_lo}, hi={mc_gate_hi}")
+        if mc_residual and anchor_mode != "complex_mc":
+            raise ValueError("mc_residual requires anchor_mode='complex_mc'")
+        if mc_residual and mc_gate:
+            raise ValueError("mc_residual and mc_gate are mutually exclusive "
+                             "(D1 is gate-free by construction)")
+        if mc_residual and mc_smooth:
+            raise ValueError("mc_residual and mc_smooth are mutually exclusive")
+        if mc_res_strength < 0.0:
+            raise ValueError(f"mc_res_strength must be >= 0, got "
+                             f"{mc_res_strength}")
+        if mc_res_window < 1.0:
+            raise ValueError(f"mc_res_window must be >= 1, got "
+                             f"{mc_res_window}")
+        if mc_res_cutoff < 0.0:
+            raise ValueError(f"mc_res_cutoff must be >= 0, got "
+                             f"{mc_res_cutoff}")
+        self.cutoff_frac = cutoff_frac
+        self.sigma_k_frac = sigma_k_frac
+        self.alpha = alpha
+        self.rho = rho
+        self.color_space = color_space
+        self.anchor_mode = anchor_mode
+        self.reset_on_cut = reset_on_cut
+        self.cut_thresh = cut_thresh
+        # phase_anchor (M0.2): extra flat, DC-excluded anchoring weight added to
+        # the Gaussian in `complex` mode only. 0.0 => shipped behaviour exactly
+        # (byte-identical). It targets *positional* (low-band phase) drift — the
+        # wandering-hotspot case — which the DC-centric Gaussian under-corrects.
+        self.phase_anchor = phase_anchor
+        # mc_strength (M0.3): fraction of the measured current-vs-anchor low-band
+        # shift that is undone before blending, in the `complex_mc` mode only.
+        # 0.0 => complex_mc is byte-identical to complex (a clean sweep anchor and
+        # a no-op invariant). 1.0 => the wandering bump is fully re-centered onto
+        # the anchor's position each frame. Ignored by every other mode.
+        self.mc_strength = mc_strength
+        # mc_taper (M0.4): apply the re-centering ramp as a GRADED, unit-modulus
+        # shift weighted by the Gaussian band weight — full translation on the
+        # low-k cells the bump lives in, fading to an exact identity on the
+        # detail-carrying band edge the SSIM high-pass overlaps. False => the M0.3
+        # rigid full-band ramp (which rotated those edge cells at full strength and
+        # collapsed hf_ssim). complex_mc only.
+        self.mc_taper = mc_taper
+        # mc_deadband (M0.4): a shift below this many pixels (after the mc_strength
+        # scale) is snapped to an EXACT no-op, so estimator noise at ~zero wander
+        # (e.g. gain_field) yields output byte-identical to the non-mc `complex`
+        # path. This is the explicit zero-shift-identity invariant. complex_mc only.
+        self.mc_deadband = mc_deadband
+        # mc_band (M0.6): if > 0, restrict the re-centering shift to the innermost
+        # radial band r < mc_band (cyc/px) via a hard/flat-top phase mask, leaving
+        # the SSIM-overlapping mid/high band an exact identity. This is the M0.5 E3
+        # mechanism (the first setting to clear D+S+M on the hotspot). 0.0 => the
+        # M0.4 behaviour exactly (gaussian mc_taper or a rigid ramp). When >0 it
+        # REPLACES the gaussian mc_taper as the shift's phase weighting. complex_mc.
+        self.mc_band = mc_band
+        # mc_est (M0.6): "corr" (default) = the M0.3 correlation-peak estimator;
+        # "phase_plane" = a magnitude-weighted, Huber-robust phase-slope fit over
+        # the lowest non-DC cells. Alternative estimator only; complex_mc.
+        self.mc_est = mc_est
+        # mc_smooth (M0.6): if True, pass the per-frame displacement estimate
+        # through a causal alpha-beta trajectory filter (state on CoherenceState)
+        # before applying the correction, denoising the path. Default off (the raw
+        # per-frame estimate, byte-identical to M0.4). complex_mc.
+        self.mc_smooth = mc_smooth
+        # mc_edge (M0.6): band-mask edge shape when mc_band>0. "hard" = a step cut
+        # (E3 verbatim); "flat_top" = a raised-cosine transition centered on
+        # mc_band. Ignored when mc_band==0. complex_mc.
+        self.mc_edge = mc_edge
+        # mc_gate (M3): the velocity-coherence GATE (see the GATE block comment).
+        # When True (complex_mc only), the per-frame correction is scaled by
+        # g=1-smoothstep(mc_gate_lo, mc_gate_hi, C), where C is the directional
+        # persistence of the low-band motion: FULL correction on incoherent
+        # wander (C<=lo), an EXACT pass-through on coherent motion (C>=hi). This
+        # is the M2-trap fix. False (default) => byte-identical to the frozen
+        # engine (g==1 always), so the pre-M3 behaviour stays reachable by a flag.
+        self.mc_gate = mc_gate
+        self.mc_gate_lo = mc_gate_lo    # C below this => full correction (g=1)
+        self.mc_gate_hi = mc_gate_hi    # C above this => identity      (g=0)
+        self.mc_gate_decay = mc_gate_decay   # mu of the velocity EMAs (memory)
+        self.mc_gate_pos_decay = mc_gate_pos_decay   # offset pre-smoother (denoise)
+        # mc_residual (M4/D1): PREDICT-THEN-CORRECT-THE-RESIDUAL anchoring. The
+        # measured current-vs-anchor offset is predicted one frame ahead by an
+        # alpha-beta (constant-velocity) filter; only the unpredicted residual
+        # r = measured - prediction is corrected, scaled by its significance f
+        # = smoothstep(0, mc_res_cutoff, |r|) (f=1.0 when cutoff<=0). f gates
+        # the shift AND the anchor-blend below, so an exactly predictable
+        # trajectory (constant velocity -> r->0 -> f->0) is a provable no-op.
+        # Replaces the velocity GATE with a continuous prior; mutually
+        # exclusive with mc_gate/mc_smooth. complex_mc only.
+        self.mc_residual = mc_residual
+        self.mc_res_strength = mc_res_strength   # residual correction gain
+        self.mc_res_window = mc_res_window       # alpha-beta window (frames)
+        self.mc_res_cutoff = mc_res_cutoff       # residual significance (px)
+        self._wcache: dict = {}     # (kh,kw) -> gaussian weight
+        self._pcache: dict = {}     # (kh,kw) -> flat phase weight
+        self._bcache: dict = {}     # (kh,kw,H,W,edge) -> radial band mask
+
+    # -- box geometry ------------------------------------------------------ #
+    def _dims(self, H: int, W: int) -> tuple[int, int]:
+        # dc_only keeps just the DC cell -> a 24-byte anchor (§1).
+        if self.anchor_mode == "dc_only":
+            return 1, 1
+        return box_dims(self.cutoff_frac, H, W)
+
+    def _weight(self, kh: int, kw: int, device) -> torch.Tensor:
+        key = (kh, kw, str(device))
+        w = self._wcache.get(key)
+        if w is None:
+            w = gaussian_band_weight(kh, kw, self.sigma_k_frac, device=device,
+                                     cutoff_frac=self.cutoff_frac)
+            self._wcache[key] = w
+        return w
+
+    def _blend_weight(self, kh: int, kw: int, device) -> torch.Tensor:
+        """Effective per-cell anchor weight w in [0,1]-ish. In `complex` mode
+        with phase_anchor>0, superpose a flat, DC-excluded phase weight onto the
+        Gaussian so the position-carrying cells get anchored too. Capped at 1 so
+        alpha*w stays a valid convex blend factor after the alpha scale."""
+        w = self._weight(kh, kw, device)
+        if self.anchor_mode != "complex" or self.phase_anchor <= 0.0:
+            return w
+        key = (kh, kw, str(device))
+        wp = self._pcache.get(key)
+        if wp is None:
+            wp = phase_band_weight(kh, kw, device=device)
+            self._pcache[key] = wp
+        return torch.clamp(w + self.phase_anchor * wp, max=1.0)
+
+    # -- M0.6 motion-compensation helpers ---------------------------------- #
+    def _mc_taper_weight(self, kh: int, kw: int, H: int, W: int, device):
+        """The per-cell PHASE taper applied to the mc shift. mc_band>0 (M0.5 E3)
+        takes precedence: use the radial band mask (hard / flat_top) and leave the
+        SSIM-overlapping band an exact identity. Else fall back to the M0.4 path:
+        the gaussian band weight when mc_taper, or None (rigid ramp)."""
+        if self.mc_band > 0.0:
+            key = (kh, kw, H, W, self.mc_edge, str(device))
+            m = self._bcache.get(key)
+            if m is None:
+                m = radial_band_mask(kh, kw, H, W, self.mc_band, device=device,
+                                     edge=self.mc_edge)
+                self._bcache[key] = m
+            return m
+        return self._weight(kh, kw, device) if self.mc_taper else None
+
+    def _mc_confidence(self, Xlo: torch.Tensor, anchor: torch.Tensor) -> float:
+        """Phase-coherence of the current low band vs the anchor, in [0,1]: the
+        magnitude of the summed cross-power over the summed |cross-power|, with DC
+        excluded. ~1 when a clean rigid shift explains the band (phases align),
+        ~0 when the low band is incoherent (noise) — used to gate the alpha-beta
+        filter so noisy frames move the trajectory less."""
+        if anchor.abs().sum().item() <= EPS:
+            return 0.0
+        cross = (Xlo * anchor.conj()).sum(dim=0).clone()   # [kh,kw]
+        cross[cross.shape[-2] // 2, 0] = 0.0               # exclude DC
+        denom = float(cross.abs().sum().item()) + EPS
+        return float(cross.sum().abs().item() / denom)
+
+    def _smooth_shift(self, dy: float, dx: float, conf: float,
+                      state: CoherenceState):
+        """Causal alpha-beta trajectory filter on the (dy, dx) estimate. Returns
+        the filtered offset; the correction downstream is -mc_strength*filtered
+        (the desired path is the near-static anchor at offset 0, so the stabilized
+        target p* = 0 and delta = p* - p_filtered)."""
+        if not state.mc_filt_init:
+            state.mc_pdy, state.mc_pdx = dy, dx
+            state.mc_vdy, state.mc_vdx = 0.0, 0.0
+            state.mc_conf = conf
+            state.mc_filt_init = True
+            return dy, dx
+        a = MC_ALPHA_AB * conf
+        b = MC_BETA_AB * conf
+        pdy = state.mc_pdy + state.mc_vdy                  # predict
+        pdx = state.mc_pdx + state.mc_vdx
+        ry, rx = dy - pdy, dx - pdx                        # innovation
+        pdy += a * ry
+        pdx += a * rx
+        state.mc_vdy += b * ry
+        state.mc_vdx += b * rx
+        state.mc_pdy, state.mc_pdx = pdy, pdx
+        state.mc_conf = conf
+        return pdy, pdx
+
+    def _velocity_gate(self, dy: float, dx: float, state: CoherenceState) -> float:
+        """Update the velocity-coherence integrators from the current low-band
+        offset (dy,dx) vs the anchor and return the correction gate g in [0,1].
+        See the GATE block comment at the top of the module. g=1 => full
+        correction (incoherent wander), g=0 => exact pass-through (coherent
+        motion). Also stores gate_C / gate_g on `state` for introspection.
+
+        First measured frame seeds the offset and returns g=1: a single frame
+        carries no velocity, so it cannot yet look coherent and defaults to
+        correction. Frames with negligible accumulated speed (a static scene,
+        nothing positional to protect) also return g=1 (C:=0), so magnitude/DC
+        drift on a still scene is still fully corrected."""
+        if not state.gate_init:
+            state.gate_pdy, state.gate_pdx = dy, dx     # seed smoothed offset p_bar
+            state.gate_sy = state.gate_sx = state.gate_sp = 0.0
+            state.gate_init = True
+            state.gate_C, state.gate_g = 0.0, 1.0
+            return 1.0
+        # Advance the smoothed offset p_bar; v is its increment (denoised velocity).
+        k = self.mc_gate_pos_decay
+        new_py = k * state.gate_pdy + (1.0 - k) * dy
+        new_px = k * state.gate_pdx + (1.0 - k) * dx
+        vy = new_py - state.gate_pdy
+        vx = new_px - state.gate_pdx
+        state.gate_pdy, state.gate_pdx = new_py, new_px
+        mu = self.mc_gate_decay
+        state.gate_sy = mu * state.gate_sy + (1.0 - mu) * vy
+        state.gate_sx = mu * state.gate_sx + (1.0 - mu) * vx
+        speed = (vy * vy + vx * vx) ** 0.5
+        state.gate_sp = mu * state.gate_sp + (1.0 - mu) * speed
+        if state.gate_sp <= GATE_SPEED_FLOOR:
+            state.gate_C, state.gate_g = 0.0, 1.0
+            return 1.0
+        net = (state.gate_sy * state.gate_sy + state.gate_sx * state.gate_sx) ** 0.5
+        C = net / (state.gate_sp + EPS)
+        C = 0.0 if C < 0.0 else (1.0 if C > 1.0 else C)
+        g = 1.0 - _smoothstep(self.mc_gate_lo, self.mc_gate_hi, C)
+        state.gate_C, state.gate_g = C, g
+        return g
+
+    def _res_gains(self):
+        """D1 alpha-beta gains from the configured window (frames): alpha =
+        2/(W+1) (the EMA-equivalent of a W-frame window) with the standard
+        critically-damped pairing beta = alpha^2/(2-alpha)."""
+        a = 2.0 / (self.mc_res_window + 1.0)
+        b = a * a / (2.0 - a)
+        return a, b
+
+    def _residual_shift(self, dy: float, dx: float, state: CoherenceState):
+        """D1 residual anchoring: advance the alpha-beta (constant-velocity)
+        predictor over the measured offset and return (ry, rx, f) — the
+        UNPREDICTED residual and its significance scale f in [0,1].
+
+        The first measured frame seeds the filter and returns (0, 0, 0): no
+        prediction exists yet, so nothing is corrected. After that the
+        innovation r = measured - prediction decays to zero on exactly
+        constant-velocity motion (the downstream correction is then a no-op)
+        while wander the constant-velocity prior cannot track stays in r."""
+        a, b = self._res_gains()
+        if not state.res_filt_init:
+            state.res_pdy, state.res_pdx = dy, dx
+            state.res_vdy = state.res_vdx = 0.0
+            state.res_filt_init = True
+            state.res_ry = state.res_rx = 0.0
+            state.res_f = 0.0
+            return 0.0, 0.0, 0.0
+        pdy = state.res_pdy + state.res_vdy
+        pdx = state.res_pdx + state.res_vdx
+        ry, rx = dy - pdy, dx - pdx
+        state.res_pdy = pdy + a * ry
+        state.res_pdx = pdx + a * rx
+        state.res_vdy += b * ry
+        state.res_vdx += b * rx
+        if self.mc_res_cutoff <= 0.0:
+            f = 1.0
+        else:
+            f = _smoothstep(0.0, self.mc_res_cutoff, max(abs(ry), abs(rx)))
+        state.res_ry, state.res_rx, state.res_f = ry, rx, f
+        return ry, rx, f
+
+    def _reset_mc_filter(self, state: CoherenceState) -> None:
+        state.mc_pdy = state.mc_pdx = 0.0
+        state.mc_vdy = state.mc_vdx = 0.0
+        state.mc_conf = 0.0
+        state.mc_filt_init = False
+        # M3: a scene cut invalidates the velocity history too — drop the gate's
+        # integrators so the new scene starts from correction (g=1) and re-learns
+        # its coherence from scratch (never carries the old scene's verdict over).
+        state.gate_pdy = state.gate_pdx = 0.0
+        state.gate_sy = state.gate_sx = state.gate_sp = 0.0
+        state.gate_init = False
+        state.gate_C = 0.0
+        state.gate_g = 1.0
+        # M4/D1: a cut also invalidates the constant-velocity hypothesis.
+        state.res_pdy = state.res_pdx = 0.0
+        state.res_vdy = state.res_vdx = 0.0
+        state.res_filt_init = False
+        state.res_ry = state.res_rx = 0.0
+        state.res_f = 0.0
+
+    # -- public interface -------------------------------------------------- #
+    def init_state(self, H: int, W: int, device="cpu") -> CoherenceState:
+        kh, kw = self._dims(H, W)
+        z = torch.zeros(3, kh, kw, dtype=torch.complex64, device=device)
+        return CoherenceState(anchor=z.clone(), prev_lowband=z.clone(),
+                              n_seen=0, warm=False, cut_cooldown=0, H=H, W=W)
+
+    def state_bytes(self, H: int, W: int) -> int:
+        kh, kw = self._dims(H, W)
+        return 3 * kh * kw * 8          # complex64 = 8 bytes/cell, C=3
+
+    def reset(self, state: CoherenceState) -> CoherenceState:
+        state.anchor = torch.zeros_like(state.anchor)
+        state.prev_lowband = torch.zeros_like(state.prev_lowband)
+        state.n_seen = 0
+        state.warm = False
+        state.cut_cooldown = 0
+        self._reset_mc_filter(state)
+        return state
+
+    def process_frame(self, frame: torch.Tensor, state: CoherenceState):
+        # alpha=0 is an exact no-op toggle: return the input untouched so an A/B
+        # switch is byte-identical (§6 invariant i). Skips the FFT round-trip.
+        if self.alpha == 0.0:
+            return frame, state
+
+        kh, kw = self._dims(state.H, state.W)
+        device = frame.device
+        xc = rgb_to_ycbcr(frame) if self.color_space == "ycbcr" else frame
+        X = torch.fft.rfft2(xc)                     # [C,H,Wf] complex64
+        Xlo = _crop_box(X, kh, kw)                  # [C,kh,kw]
+
+        is_cut = state.warm and detect_cut(Xlo, state.prev_lowband,
+                                           self.cut_thresh)
+
+        if is_cut and self.reset_on_cut:
+            # Hard reset: drop scene-A anchor, seed with scene B, skip the blend.
+            state.anchor = Xlo.clone()
+            state.prev_lowband = Xlo.clone()
+            state.n_seen = 1
+            state.warm = True
+            state.cut_cooldown = 0
+            self._reset_mc_filter(state)   # new scene: drop the stale trajectory
+            return frame, state
+
+        # rho: adapt fast for a few frames after a soft cut, else steady drift.
+        if is_cut and not self.reset_on_cut:
+            state.cut_cooldown = CUT_COOLDOWN_N
+        rho_eff = CUT_RHO if state.cut_cooldown > 0 else self.rho
+
+        # Update anchor (first-value init -> plain EMA thereafter).
+        if not state.warm:
+            state.anchor = Xlo.clone()
+            state.n_seen = 1
+            state.warm = True
+        else:
+            state.n_seen += 1
+            state.anchor = ema_update(state.anchor, Xlo, rho_eff, state.n_seen)
+
+        # On a soft cut we still refreshed the anchor but skip blending this
+        # frame so the new scene is not pulled toward the stale target.
+        if is_cut and not self.reset_on_cut:
+            state.prev_lowband = Xlo.clone()
+            state.cut_cooldown = max(0, state.cut_cooldown - 1)
+            return frame, state
+
+        # Weighted blend toward the driftful anchor (§2 step 4). The weight is
+        # the DC-centric Gaussian, plus (complex + phase_anchor>0) a flat
+        # DC-excluded term so positional low-band phase drift is anchored too.
+        target = target_lowband(Xlo, state.anchor, self.anchor_mode)
+        w = self._blend_weight(kh, kw, device)      # [kh,kw] real, <=1
+        aw = (self.alpha * w).clamp(max=1.0)
+
+        # Motion-compensated pre-shift (complex_mc, M0.3 + M0.4): measure how far
+        # the current low band has wandered from the anchor and undo mc_strength of
+        # it BEFORE the blend, so the bump is re-centered rather than pulled toward
+        # a lagging target. M0.4 makes the shift a GRADED, unit-modulus k-space
+        # phase ramp (mc_taper) so only the position-carrying low-k cells move and
+        # the detail-carrying band edge the SSIM high-pass overlaps is left exact,
+        # and snaps sub-deadband shifts to an exact no-op (zero-shift identity).
+        src = Xlo
+        gate_g = 1.0
+        if (self.mc_residual and self.mc_res_strength > 0.0
+                and state.n_seen > 1):
+            # M4/D1 residual anchoring: anchor to the alpha-beta PREDICTION of
+            # the measured offset and correct only the unpredicted residual
+            # (see _residual_shift). gate_g carries the residual significance f
+            # and scales the shift AND the blend below, so a constant-velocity
+            # trajectory is a no-op by construction.
+            if self.mc_est == "phase_plane":
+                dy, dx = estimate_lowband_shift_phaseplane(
+                    Xlo, state.anchor, state.H, state.W)
+            else:
+                dy, dx = estimate_lowband_shift(
+                    Xlo, state.anchor, state.H, state.W)
+            ry, rx, gate_g = self._residual_shift(dy, dx, state)
+            sdy = -self.mc_res_strength * gate_g * ry
+            sdx = -self.mc_res_strength * gate_g * rx
+            if max(abs(sdy), abs(sdx)) >= self.mc_deadband:
+                taper = self._mc_taper_weight(kh, kw, state.H, state.W, device)
+                src = apply_lowband_shift(Xlo, sdy, sdx, state.H, state.W,
+                                          taper=taper)
+        elif (self.anchor_mode == "complex_mc" and self.mc_strength > 0.0
+                and state.n_seen > 1):
+            if self.mc_est == "phase_plane":
+                dy, dx = estimate_lowband_shift_phaseplane(
+                    Xlo, state.anchor, state.H, state.W)
+            else:
+                dy, dx = estimate_lowband_shift(
+                    Xlo, state.anchor, state.H, state.W)
+            # M0.6 mc_smooth: denoise the trajectory before applying (default off
+            # -> byte-identical to M0.4, which uses the raw per-frame estimate).
+            if self.mc_smooth:
+                conf = self._mc_confidence(Xlo, state.anchor)
+                dy, dx = self._smooth_shift(dy, dx, conf, state)
+            # M3 velocity-coherence gate: scale the correction toward an exact
+            # identity where the low-band motion is directionally coherent (a
+            # pan / translation / accelerating subject), leaving it full where it
+            # is incoherent wander (what complex_mc exists to remove). g gates
+            # BOTH the pre-shift AND the anchor-blend weight below, so a coherent
+            # frame is a provable pass-through. Off (default) => g stays 1.0 and
+            # every downstream value is byte-identical to the frozen engine.
+            if self.mc_gate:
+                gate_g = self._velocity_gate(dy, dx, state)
+            sdy = -self.mc_strength * gate_g * dy
+            sdx = -self.mc_strength * gate_g * dx
+            if max(abs(sdy), abs(sdx)) >= self.mc_deadband:
+                taper = self._mc_taper_weight(kh, kw, state.H, state.W, device)
+                src = apply_lowband_shift(Xlo, sdy, sdx, state.H, state.W,
+                                          taper=taper)
+        # g scales the blend too: at g=0 (coherent) aw_eff=0 => Xlo_new==src==Xlo,
+        # the whole low band untouched (position, magnitude AND any legitimate
+        # illumination all preserved). g==1.0 when the gate is off => bitwise the
+        # frozen blend (x*1.0 is exact for finite float32).
+        aw_eff = aw * gate_g
+        Xlo_new = (1.0 - aw_eff) * src + aw_eff * target
+
+        X_new = put_low_band(X, Xlo_new)
+        xc_out = torch.fft.irfft2(X_new, s=(state.H, state.W))
+        out = ycbcr_to_rgb(xc_out) if self.color_space == "ycbcr" else xc_out
+        out = out.clamp(0.0, 1.0)
+
+        state.prev_lowband = Xlo.clone()
+        if state.cut_cooldown > 0:
+            state.cut_cooldown -= 1
+        return out, state
+
+    def process_segment(self, frames: torch.Tensor, state: CoherenceState):
+        """Batched-segment path = streaming path, frame by frame.
+
+        Implemented as the process_frame loop so the two paths agree exactly
+        (§6 invariant ii): a generator emitting clips gets the same result as
+        one feeding frames one at a time.
+        """
+        out = []
+        for t in range(frames.shape[0]):
+            y, state = self.process_frame(frames[t], state)
+            out.append(y)
+        return torch.stack(out, 0), state
+
+
+# --------------------------------------------------------------------------- #
+# Stats-EMA baseline (§5) — the floor the FFT engine must beat. Rolling EMA of
+# per-channel mean/std matched into each frame (AdaIN-in-time). No FFT, ~24 B.
+# Same interface as the spectral engine so wrap_generator / the A/B harness
+# never know which is running.
+# --------------------------------------------------------------------------- #
+@dataclass
+class StatsState:
+    mu: torch.Tensor                # [C] running mean
+    sd: torch.Tensor                # [C] running std
+    n_seen: int = 0
+    warm: bool = False
+    H: int = 0
+    W: int = 0
+
+
+class StatsEMAEngine:
+    def __init__(self,
+                 alpha: float = 0.5,
+                 rho: float = 0.995,
+                 color_space: str = "ycbcr"):
+        self.alpha = alpha
+        self.rho = rho
+        self.color_space = color_space
+
+    def init_state(self, H: int, W: int, device="cpu") -> StatsState:
+        z = torch.zeros(3, device=device)
+        return StatsState(mu=z.clone(), sd=z.clone(), n_seen=0, warm=False,
+                          H=H, W=W)
+
+    def state_bytes(self, H: int, W: int) -> int:
+        return 2 * 3 * 4               # mean+std, C=3, float32 = 24 bytes
+
+    def reset(self, state: StatsState) -> StatsState:
+        state.mu = torch.zeros_like(state.mu)
+        state.sd = torch.zeros_like(state.sd)
+        state.n_seen = 0
+        state.warm = False
+        return state
+
+    def process_frame(self, frame: torch.Tensor, state: StatsState):
+        if self.alpha == 0.0:
+            return frame, state
+        xc = rgb_to_ycbcr(frame) if self.color_space == "ycbcr" else frame
+        mu = xc.mean(dim=(-1, -2))                 # [C]
+        sd = xc.std(dim=(-1, -2))                  # [C]
+        if not state.warm:
+            state.mu, state.sd = mu.clone(), sd.clone()
+            state.n_seen, state.warm = 1, True
+        else:
+            state.mu = ema_update(state.mu, mu, self.rho)
+            state.sd = ema_update(state.sd, sd, self.rho)
+            state.n_seen += 1
+        # Pull frame stats a fraction alpha toward the anchored stats.
+        tgt_mu = (1 - self.alpha) * mu + self.alpha * state.mu
+        tgt_sd = (1 - self.alpha) * sd + self.alpha * state.sd
+        norm = (xc - mu[..., None, None]) / (sd[..., None, None] + EPS)
+        xc_out = norm * tgt_sd[..., None, None] + tgt_mu[..., None, None]
+        out = ycbcr_to_rgb(xc_out) if self.color_space == "ycbcr" else xc_out
+        return out.clamp(0.0, 1.0), state
+
+    def process_segment(self, frames: torch.Tensor, state: StatsState):
+        out = []
+        for t in range(frames.shape[0]):
+            y, state = self.process_frame(frames[t], state)
+            out.append(y)
+        return torch.stack(out, 0), state

@@ -1,0 +1,12 @@
+{
+  "original_driver_sha256": "037b24c283bff84828e75ee8e0d981aeabc635e449d5d680a8afe9a7522fca87",
+  "archived_driver": "historical_used_driver_retained_privately_at_incumbent_location",
+  "archived_bytes_match": true,
+  "active_driver_changed_after_run": "metadata correction: permission does not establish stranger identity",
+  "original_owned_clip_result_affected": false,
+  "legacy_operator_sources_still_match": {
+    "run_eng1_1080.py": true,
+    "core.py": true,
+    "metrics.py": true
+  }
+}

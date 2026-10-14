@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "version": "0.1.1",
+  "package_source": "/private/tmp/brainsnn-video-v011-wheel-check/brainsnn_video",
+  "top_import_without_torch": true,
+  "native_wave_observation_analytic_validator_assessor_imports": true,
+  "two_tiny_analytic_frames_finite_input_unchanged": true,
+  "mc_gate_default_false": true,
+  "negative_stride_rejected": true,
+  "registered_motion_failure_retained": true,
+  "wheel": {
+    "filename": "dist/brainsnn_video-0.1.1-py3-none-any.whl",
+    "bytes": 284364,
+    "sha256": "5ca82883c567c9e1c01455e0d4bb8102fbb6fde82037a8c359542c6f678ca404",
+    "extracted_package_members_byte_equal_current_source": true
+  }
+}

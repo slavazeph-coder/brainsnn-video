@@ -1,0 +1,75 @@
+{
+  "status": "INHERITED_ANALYTIC_QA_FAILURES_REPRODUCED",
+  "version": "0.1.1",
+  "observed_at_utc": "2026-10-14T03:07:19.974880+00:00",
+  "source_comparison": [
+    {
+      "relative_source": "crumb_coherence/core.py",
+      "canonical_sha256": "3a1866f291482a5f08f9c23942ee35e862b67d611d081ad803c8335ebf446247",
+      "standalone_sha256": "3a1866f291482a5f08f9c23942ee35e862b67d611d081ad803c8335ebf446247",
+      "byte_equal": true
+    },
+    {
+      "relative_source": "crumb_coherence/metrics.py",
+      "canonical_sha256": "829adf0abcfdab656fc4d9bf4efd38a750a07979a9342c6bb85eff706fb0fd55",
+      "standalone_sha256": "829adf0abcfdab656fc4d9bf4efd38a750a07979a9342c6bb85eff706fb0fd55",
+      "byte_equal": true
+    },
+    {
+      "relative_source": "crumb_coherence/tests/test_core.py",
+      "canonical_sha256": "2752c69b3af4643e9bef6fcc9453ae8aab3ce837b6354b1b199c3fd4e40a7633",
+      "standalone_sha256": "2752c69b3af4643e9bef6fcc9453ae8aab3ce837b6354b1b199c3fd4e40a7633",
+      "byte_equal": true
+    },
+    {
+      "relative_source": "crumb_coherence/scripts/run_eng1_1080.py",
+      "canonical_sha256": "b55300adad692206c3fe63b86c2a5a9a49d8973aaf4eb6773e603e67125955db",
+      "standalone_sha256": "b55300adad692206c3fe63b86c2a5a9a49d8973aaf4eb6773e603e67125955db",
+      "byte_equal": true
+    }
+  ],
+  "same_interpreter": "/Users/slavaz/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/bin/python3.12",
+  "python": "3.12.12",
+  "torch": "2.12.0",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "canonical_run": {
+    "command": "python -m pytest -q experiments/wavefield_video/crumb_coherence/tests/test_core.py",
+    "passed": 28,
+    "failed": 3,
+    "exit_code": 1,
+    "seconds": 0.57
+  },
+  "standalone_run": {
+    "command": "python -m pytest -q brainsnn_video/engine/crumb_coherence/tests/test_core.py",
+    "passed": 28,
+    "failed": 3,
+    "exit_code": 1
+  },
+  "failures": [
+    {
+      "test": "test_smoothstep_bounds_and_monotone",
+      "actual": 0.5000000000000001,
+      "expected_exact": 0.5,
+      "scope": "exact-float equality"
+    },
+    {
+      "test": "test_gate_preserves_coherent_translation",
+      "gate_g_actual": 0.7601011471248479,
+      "required_below": 0.5,
+      "scope": "optional mc_gate=True"
+    },
+    {
+      "test": "test_gate_still_corrects_wander",
+      "dev_vs_ungated": 0.02456492930650711,
+      "dev_input": 0.012160788290202618,
+      "required": "dev_vs_ungated < dev_input",
+      "scope": "optional mc_gate=True"
+    }
+  ],
+  "frozen_SHIP_CFG_unchanged": true,
+  "SHIP_CFG_mc_gate": "omitted; unchanged SpectralCoherenceEngine default False",
+  "engine_tuned": false,
+  "tests_disabled_or_weakened": false,
+  "all_tests_passed_claim_allowed": false,
+  "product_release_quality_claim_allowed": false
+}

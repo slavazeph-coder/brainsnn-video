@@ -1,0 +1,44 @@
+{
+  "status": "historical_rejections; not reproduced in this checkout",
+  "actual_source_name_count": 2,
+  "signed_latent_feedback_pair": {
+    "source_report_sha256": "9b957537cdff641ef6d215b61081651bdb227f75eeea948b719d5e5499791fcc",
+    "verdict": "REJECT",
+    "initialization_seeds": [
+      0
+    ],
+    "optimizer_updates": 512,
+    "candidate_k": 2,
+    "control_k": 0,
+    "candidate_integrated_error_over_frozen": 2.168985,
+    "candidate_late_quarter_error_over_control": 0.0033954,
+    "candidate_training_cost_over_control": 4.44
+  },
+  "completed_longer_rollout_campaign": {
+    "source_report_sha256": "962c5243331381c623d2d60f5a0942f34555e66f088e003b930e45b9c5a333c4",
+    "verdict": "REJECT",
+    "initialization_seeds": [
+      0,
+      1,
+      2
+    ],
+    "optimizer_updates_per_run": 4096,
+    "candidate_k": 1,
+    "control_k": 0,
+    "candidate_integrated_error_over_frozen_by_seed": [
+      135.663,
+      158.974,
+      74.97
+    ],
+    "candidate_cpu_diagnostic_comparisons_better_than_control": 12,
+    "candidate_cpu_diagnostic_comparisons_better_than_frozen": 0,
+    "candidate_training_cost_over_control": 2.706,
+    "original_independent_heldout_window_count": 1
+  },
+  "claim_allowed": {
+    "better_decoded_video": false,
+    "architecture_superiority": false,
+    "equal_compute_comparison": false
+  },
+  "scope": "Source-name separation only; independent footage diversity/provenance and decoded review remain unestablished."
+}

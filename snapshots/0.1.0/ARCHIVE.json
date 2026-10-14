@@ -1,0 +1,10 @@
+{
+  "snapshot_id": "brainsnn-video-local-separation-20261013",
+  "version": "0.1.0",
+  "hashed_artifacts": 70,
+  "original_SHA256SUMS_sha256": "9a5b15215eba3086bbbe5fa6d004534c28fcc667c354114ea77fb4f072bf2aaf",
+  "archive_complete": true,
+  "byte_identical": true,
+  "full_git_history_copied": false,
+  "weights_or_media_included": false
+}

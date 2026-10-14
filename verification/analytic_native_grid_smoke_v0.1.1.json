@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "scope": "Two synthetic native-grid CPU engineering frames; no video quality claim",
+  "frames": 2,
+  "dimensions": [
+    1280,
+    720
+  ],
+  "device": "cpu",
+  "threads": 1,
+  "trained_weights": false,
+  "source": "brainsnn_video/engine/crumb_coherence/core.py",
+  "source_sha256": "3a1866f291482a5f08f9c23942ee35e862b67d611d081ad803c8335ebf446247",
+  "config": {
+    "alpha": 0.95,
+    "rho": 0.995,
+    "cutoff_frac": 0.14,
+    "anchor_mode": "complex_mc",
+    "mc_strength": 0.5,
+    "mc_band": 0.03,
+    "phase_anchor": 0.0
+  },
+  "finite_outputs": true,
+  "input_not_mutated": true,
+  "wall_seconds": 0.08242925000377,
+  "baseline_or_customer_outcome": "not evaluated by this engineering smoke",
+  "quality_claim_allowed": false,
+  "paid_fulfillment_allowed": false
+}

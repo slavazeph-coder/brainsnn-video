@@ -1,0 +1,467 @@
+{
+  "snapshot_id": "brainsnn-video-local-separation-20261013",
+  "created_at_utc": "2026-10-14T02:16:09.581792+00:00",
+  "source_project": "crumb-format",
+  "source_head": "8c1a63bc0e69af10a3e678714e719839f12e97ba",
+  "source_branch": "zeph/fix-kvq-backend",
+  "incumbent_sources_preserved": true,
+  "observation_sources_frozen": true,
+  "credentials_included": false,
+  "private_correspondence_included": false,
+  "transcript_included": false,
+  "weights_included": false,
+  "media_included": false,
+  "queue_controller_included": false,
+  "full_git_history_copied": false,
+  "history_reference": "docs/history/UPSTREAM_HISTORY.json",
+  "files": [
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/wfvideo.py",
+      "source_sha256": "85f0d97cb23f3a68ffcef5091342b21ecaef8b321fe7f1a03cab636d33eb85fe",
+      "destination": "brainsnn_video/engine/wfvideo.py",
+      "destination_sha256": "85f0d97cb23f3a68ffcef5091342b21ecaef8b321fe7f1a03cab636d33eb85fe",
+      "bytes": 47563,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/ssm_lite.py",
+      "source_sha256": "df7ac638f4cc0c304bc9762a3f47ae07458e34b5eaeb5600179bf90f897321d4",
+      "destination": "brainsnn_video/engine/ssm_lite.py",
+      "destination_sha256": "df7ac638f4cc0c304bc9762a3f47ae07458e34b5eaeb5600179bf90f897321d4",
+      "bytes": 7294,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/ssm_quat.py",
+      "source_sha256": "ed28deedcfd6bc2bf4d7f4d8c9de8ed68a9aa7568ce1e75dc341648f20a78a07",
+      "destination": "brainsnn_video/engine/ssm_quat.py",
+      "destination_sha256": "ed28deedcfd6bc2bf4d7f4d8c9de8ed68a9aa7568ce1e75dc341648f20a78a07",
+      "bytes": 8989,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/wfvideo_quat.py",
+      "source_sha256": "17baef52bd8f61e906e103b7ff0e893b895e37a9a9cf2624490598c8b7ee0a1c",
+      "destination": "brainsnn_video/engine/wfvideo_quat.py",
+      "destination_sha256": "17baef52bd8f61e906e103b7ff0e893b895e37a9a9cf2624490598c8b7ee0a1c",
+      "bytes": 7289,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/data.py",
+      "source_sha256": "3d88feffc3a238d226124b9d7026487874fd9e00db904f041626a49b238bd4c8",
+      "destination": "brainsnn_video/engine/data.py",
+      "destination_sha256": "3d88feffc3a238d226124b9d7026487874fd9e00db904f041626a49b238bd4c8",
+      "bytes": 7239,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/data_waves.py",
+      "source_sha256": "1bfb4df24fcf8b9c52c9278881861c15e6cb3d4428d93ee0f719b4b226abed70",
+      "destination": "brainsnn_video/engine/data_waves.py",
+      "destination_sha256": "1bfb4df24fcf8b9c52c9278881861c15e6cb3d4428d93ee0f719b4b226abed70",
+      "bytes": 11326,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/data_occlusion.py",
+      "source_sha256": "de4bebe1a847b48e2e664c2dadb7a501145225856348bf6e706110ee70edf1af",
+      "destination": "brainsnn_video/engine/data_occlusion.py",
+      "destination_sha256": "de4bebe1a847b48e2e664c2dadb7a501145225856348bf6e706110ee70edf1af",
+      "bytes": 8963,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/semantic_metrics.py",
+      "source_sha256": "a61d7b7361dee9abe380281509b88c7b17753266d74cbb5c83504bb5817d4e25",
+      "destination": "brainsnn_video/engine/semantic_metrics.py",
+      "destination_sha256": "a61d7b7361dee9abe380281509b88c7b17753266d74cbb5c83504bb5817d4e25",
+      "bytes": 11878,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/train_compare.py",
+      "source_sha256": "c6008fe8f47f0d503b38c0f790784ec1db4032f3448b04a1dc0a966f23e4ac56",
+      "destination": "brainsnn_video/engine/train_compare.py",
+      "destination_sha256": "c6008fe8f47f0d503b38c0f790784ec1db4032f3448b04a1dc0a966f23e4ac56",
+      "bytes": 66169,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/train_long.py",
+      "source_sha256": "c4de532f92d6fa94a99aa41a525294e527cb1208f0c8a133f38c2b607e17871b",
+      "destination": "brainsnn_video/engine/train_long.py",
+      "destination_sha256": "c4de532f92d6fa94a99aa41a525294e527cb1208f0c8a133f38c2b607e17871b",
+      "bytes": 26581,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/rollout_training.py",
+      "source_sha256": "11da52a6bad4ecd0f329282d7e96f679145efdf8e714e1aba20a26b82969fd86",
+      "destination": "brainsnn_video/engine/rollout_training.py",
+      "destination_sha256": "11da52a6bad4ecd0f329282d7e96f679145efdf8e714e1aba20a26b82969fd86",
+      "bytes": 5277,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/latent_ae.py",
+      "source_sha256": "8c573ae2b3cff942fb553285bffd4d9e794e1c2c4d0fa8e42f2fe3648551a10b",
+      "destination": "brainsnn_video/engine/latent_ae.py",
+      "destination_sha256": "8c573ae2b3cff942fb553285bffd4d9e794e1c2c4d0fa8e42f2fe3648551a10b",
+      "bytes": 7557,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/video_vae.py",
+      "source_sha256": "47a931c01a4ea6a06f2512e6513a1be367f01e598a20b3d8e9b9600b74ee2b43",
+      "destination": "brainsnn_video/engine/video_vae.py",
+      "destination_sha256": "47a931c01a4ea6a06f2512e6513a1be367f01e598a20b3d8e9b9600b74ee2b43",
+      "bytes": 19245,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/long_horizon.py",
+      "source_sha256": "11a039bb164802c652f2a6b3b9a57f1e124413cb6c7a8d8157c724629920a305",
+      "destination": "brainsnn_video/engine/long_horizon.py",
+      "destination_sha256": "11a039bb164802c652f2a6b3b9a57f1e124413cb6c7a8d8157c724629920a305",
+      "bytes": 36596,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/long_eval.py",
+      "source_sha256": "24778fdb8f0a6021bbf4ef869869f045cd3f666c401c46c9c2fad4c600fa7ddc",
+      "destination": "brainsnn_video/engine/long_eval.py",
+      "destination_sha256": "24778fdb8f0a6021bbf4ef869869f045cd3f666c401c46c9c2fad4c600fa7ddc",
+      "bytes": 13287,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/eval_only.py",
+      "source_sha256": "6c1adc2079fb88430eebfab4d80cc74e73317b2cd5c73f26e8b93e8c023a0796",
+      "destination": "brainsnn_video/engine/eval_only.py",
+      "destination_sha256": "6c1adc2079fb88430eebfab4d80cc74e73317b2cd5c73f26e8b93e8c023a0796",
+      "bytes": 3063,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/render_rollout.py",
+      "source_sha256": "ffc11b9ff302b57af8b1e166d6d2b05bc8b67f4b8130b5897c1083b74609c135",
+      "destination": "brainsnn_video/engine/render_rollout.py",
+      "destination_sha256": "ffc11b9ff302b57af8b1e166d6d2b05bc8b67f4b8130b5897c1083b74609c135",
+      "bytes": 48620,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/encode_videos.py",
+      "source_sha256": "de58c3d41e49945cc564169a0a336bf441f490634683db9bca9b12e036b43cc1",
+      "destination": "brainsnn_video/engine/encode_videos.py",
+      "destination_sha256": "de58c3d41e49945cc564169a0a336bf441f490634683db9bca9b12e036b43cc1",
+      "bytes": 10236,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/recall_probe.py",
+      "source_sha256": "8317bed2d3e4b1f0591bd70864392a3de77566cc042623f4737e3e8a522462c5",
+      "destination": "brainsnn_video/engine/recall_probe.py",
+      "destination_sha256": "8317bed2d3e4b1f0591bd70864392a3de77566cc042623f4737e3e8a522462c5",
+      "bytes": 7186,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/bench_scaling_honest.py",
+      "source_sha256": "4b747452f916eec6a1fa2fc1f9a70334a9fcef8626afc5703908fa5cdd922890",
+      "destination": "brainsnn_video/engine/bench_scaling_honest.py",
+      "destination_sha256": "4b747452f916eec6a1fa2fc1f9a70334a9fcef8626afc5703908fa5cdd922890",
+      "bytes": 4097,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/bench_eager_mix.py",
+      "source_sha256": "599b2268b2a03bcf310e12c83c545780257a3fdff9f667895854e64578d6468c",
+      "destination": "brainsnn_video/engine/bench_eager_mix.py",
+      "destination_sha256": "599b2268b2a03bcf310e12c83c545780257a3fdff9f667895854e64578d6468c",
+      "bytes": 2605,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/kernels2d_smoke.py",
+      "source_sha256": "65fe9355bdc25fe6d00b5b75e1f73310d4ea08cbf4b04742b1ac2a925e970fcd",
+      "destination": "brainsnn_video/engine/kernels2d_smoke.py",
+      "destination_sha256": "65fe9355bdc25fe6d00b5b75e1f73310d4ea08cbf4b04742b1ac2a925e970fcd",
+      "bytes": 3253,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/sanity_check.py",
+      "source_sha256": "023c5baa6d85ba0bdc08cd9412f641600308f7dd78329f79ec779a8e6e68feb6",
+      "destination": "brainsnn_video/engine/sanity_check.py",
+      "destination_sha256": "023c5baa6d85ba0bdc08cd9412f641600308f7dd78329f79ec779a8e6e68feb6",
+      "bytes": 5636,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/tests/test_stateful.py",
+      "source_sha256": "ff7e34ba3208569466495967b6cba82c21e6455a755d524212342f0a328b0a7f",
+      "destination": "brainsnn_video/engine/tests/test_stateful.py",
+      "destination_sha256": "ff7e34ba3208569466495967b6cba82c21e6455a755d524212342f0a328b0a7f",
+      "bytes": 13405,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/tests/test_long_horizon.py",
+      "source_sha256": "0215c728f4538c3feae6677548fc8429231062a9cea05c7768d850ef522a30f3",
+      "destination": "brainsnn_video/engine/tests/test_long_horizon.py",
+      "destination_sha256": "0215c728f4538c3feae6677548fc8429231062a9cea05c7768d850ef522a30f3",
+      "bytes": 18860,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/tests/test_rollout_training.py",
+      "source_sha256": "3a02f292d32818e8b460939ce715a80248742769bc2f32be991c536eb7597169",
+      "destination": "brainsnn_video/engine/tests/test_rollout_training.py",
+      "destination_sha256": "3a02f292d32818e8b460939ce715a80248742769bc2f32be991c536eb7597169",
+      "bytes": 17124,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/protocol.py",
+      "source_sha256": "41ea4cd3d6a7fd1c83f612c7749d36236bcdeeacf21559583e792d93e496a862",
+      "destination": "brainsnn_video/engine/observation_memory_v2/protocol.py",
+      "destination_sha256": "41ea4cd3d6a7fd1c83f612c7749d36236bcdeeacf21559583e792d93e496a862",
+      "bytes": 16309,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/observation.py",
+      "source_sha256": "e8b9f75a2f39307684d874d9fde13c888f9fa158d68854afa4427382a1d685c9",
+      "destination": "brainsnn_video/engine/observation_memory_v2/observation.py",
+      "destination_sha256": "e8b9f75a2f39307684d874d9fde13c888f9fa158d68854afa4427382a1d685c9",
+      "bytes": 25897,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/adapters.py",
+      "source_sha256": "355b8c14030a7a338e6aa0fc26edc971812a5609dc41cf6a25e5112cf1040b5e",
+      "destination": "brainsnn_video/engine/observation_memory_v2/adapters.py",
+      "destination_sha256": "355b8c14030a7a338e6aa0fc26edc971812a5609dc41cf6a25e5112cf1040b5e",
+      "bytes": 16306,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/run.py",
+      "source_sha256": "24151a2bce9f7c5a7aac0a3af75e0c2fb30245ab7258ab10a91d10f7f8ac8720",
+      "destination": "brainsnn_video/engine/observation_memory_v2/run.py",
+      "destination_sha256": "24151a2bce9f7c5a7aac0a3af75e0c2fb30245ab7258ab10a91d10f7f8ac8720",
+      "bytes": 11561,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/train.py",
+      "source_sha256": "96f85187a5dc3170a494d2e267a30161e02c998c1b4ec5258f30b713107bcfb0",
+      "destination": "brainsnn_video/engine/observation_memory_v2/train.py",
+      "destination_sha256": "96f85187a5dc3170a494d2e267a30161e02c998c1b4ec5258f30b713107bcfb0",
+      "bytes": 20368,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/test_protocol.py",
+      "source_sha256": "c353fb5ebd49d2bdeec19c6032db2ba57abdafe6f9fedbcc79b28efcae8ac4df",
+      "destination": "brainsnn_video/engine/observation_memory_v2/test_protocol.py",
+      "destination_sha256": "c353fb5ebd49d2bdeec19c6032db2ba57abdafe6f9fedbcc79b28efcae8ac4df",
+      "bytes": 10631,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/test_observation.py",
+      "source_sha256": "d9da6b5867c54682b6f358aedaa044e6c408b01f8bd2f5802639b93325c95f90",
+      "destination": "brainsnn_video/engine/observation_memory_v2/test_observation.py",
+      "destination_sha256": "d9da6b5867c54682b6f358aedaa044e6c408b01f8bd2f5802639b93325c95f90",
+      "bytes": 13128,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/test_adapters.py",
+      "source_sha256": "1e15290fdaf9d6a6919d59a1546c86375be836d39b9cbcf4ac04d5e615acc97c",
+      "destination": "brainsnn_video/engine/observation_memory_v2/test_adapters.py",
+      "destination_sha256": "1e15290fdaf9d6a6919d59a1546c86375be836d39b9cbcf4ac04d5e615acc97c",
+      "bytes": 13344,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/test_train.py",
+      "source_sha256": "7a3263795e67550bf6d66c3fd5072c7666c9de93a159941eedfe4e08a64812e5",
+      "destination": "brainsnn_video/engine/observation_memory_v2/test_train.py",
+      "destination_sha256": "7a3263795e67550bf6d66c3fd5072c7666c9de93a159941eedfe4e08a64812e5",
+      "bytes": 8814,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/GPU_TEST_PLAN.json",
+      "source_sha256": "4c5123a26f3caa95c7c3eda276dd6caa5311533e309270428b4cc36084fff12e",
+      "destination": "brainsnn_video/engine/observation_memory_v2/GPU_TEST_PLAN.json",
+      "destination_sha256": "4c5123a26f3caa95c7c3eda276dd6caa5311533e309270428b4cc36084fff12e",
+      "bytes": 2199,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/REAL_CLIP_GATE.md",
+      "source_sha256": "b3d3f95e8d1f17777502801209c97d1d3675b6ec01975f24e1e759bea3b1e187",
+      "destination": "brainsnn_video/engine/observation_memory_v2/REAL_CLIP_GATE.md",
+      "destination_sha256": "b3d3f95e8d1f17777502801209c97d1d3675b6ec01975f24e1e759bea3b1e187",
+      "bytes": 3586,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/LONG_HORIZON.md",
+      "source_sha256": "42eefc67882d42633d6f065ab61de3e13ec5fec426510d2c802bc6f79e29ddc4",
+      "destination": "docs/history/LONG_HORIZON.md",
+      "destination_sha256": "42eefc67882d42633d6f065ab61de3e13ec5fec426510d2c802bc6f79e29ddc4",
+      "bytes": 22213,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/ROLLOUT_TRAINING.md",
+      "source_sha256": "cb9ef4b0a486ce1b1835594a6a18f4f9a10007a5c638bfd031bbdfa9be71cf2d",
+      "destination": "docs/history/ROLLOUT_TRAINING.md",
+      "destination_sha256": "cb9ef4b0a486ce1b1835594a6a18f4f9a10007a5c638bfd031bbdfa9be71cf2d",
+      "bytes": 10377,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/receipts/20261013-v2-registered/receipt.json",
+      "source_sha256": "9ca5c8a7054ec914cbab984dab63343de87338bd24155461d3a6e8bed38332f9",
+      "destination": "evidence/registered_reference/receipt.json",
+      "destination_sha256": "9ca5c8a7054ec914cbab984dab63343de87338bd24155461d3a6e8bed38332f9",
+      "bytes": 926,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/receipts/20261013-v2-registered/preregistration.json",
+      "source_sha256": "dc6a95e39fcf90153abcb1e7607cca7b2705240a6b4421af44d50e37efd93133",
+      "destination": "evidence/registered_reference/preregistration.json",
+      "destination_sha256": "dc6a95e39fcf90153abcb1e7607cca7b2705240a6b4421af44d50e37efd93133",
+      "bytes": 1912,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/receipts/20261013-v2-registered/verdict.json",
+      "source_sha256": "70adb110c1f2ed22ccec84d58ea1e330f9616f527cbd64105810141b033e7875",
+      "destination": "evidence/registered_reference/verdict.json",
+      "destination_sha256": "70adb110c1f2ed22ccec84d58ea1e330f9616f527cbd64105810141b033e7875",
+      "bytes": 1031,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/receipts/20261013-v2-registered/summary.json",
+      "source_sha256": "3c0d82c01eb48019ff0e79340effbeac664c8d6587ef85ee96f0767be5dc1006",
+      "destination": "evidence/registered_reference/summary.json",
+      "destination_sha256": "3c0d82c01eb48019ff0e79340effbeac664c8d6587ef85ee96f0767be5dc1006",
+      "bytes": 46437,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/receipts/20261013-engineering-replay/receipt.json",
+      "source_sha256": "0e39f3f12fbef23a973e3595b741c1f067d4e6d4c3d5e34cb109b062ddb5d77b",
+      "destination": "evidence/registered_reference/arithmetic_replay.json",
+      "destination_sha256": "0e39f3f12fbef23a973e3595b741c1f067d4e6d4c3d5e34cb109b062ddb5d77b",
+      "bytes": 606,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/receipts/20261013-native-numerics/receipt.json",
+      "source_sha256": "c776ac6984d6a9d6496b069cbbbf900bf279dc1fcfaa3e924aab4ff93d8d17d9",
+      "destination": "evidence/native_numerics.json",
+      "destination_sha256": "529000b302a07fa35653380efd02ebb5a8f9e7b066c4a8b52b17aa53db12f932",
+      "bytes": 3881,
+      "transformation": "absolute_source_paths_replaced_with_filenames; all numerical evidence preserved"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/observation_memory_v2/receipts/20261013-native-training-smoke-final/receipt.json",
+      "source_sha256": "196ca9fc80332dc183fc42de8feee2d8631d5d375e1b1c5c2bc9ad0cdc33eb33",
+      "destination": "evidence/native_training_smoke_summary.json",
+      "destination_sha256": "04aba9d21fbb32321cded3e82a6a51eda094d8c72d4e04b4f8643a619b0455fe",
+      "bytes": 8897,
+      "transformation": "large per-example rows omitted; scalar metrics, aggregate gate, resource figures and artifact hashes retained"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "LICENSE",
+      "source_sha256": "d5852fcaa74fe27a66ee47eadd1746222364ed3b802ccc584161d780be464065",
+      "destination": "LICENSE",
+      "destination_sha256": "d5852fcaa74fe27a66ee47eadd1746222364ed3b802ccc584161d780be464065",
+      "bytes": 1073,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/run_long_horizon.sh",
+      "source_sha256": "88ef432c36367368a599bfd805278ebaaa7847358c8d6428a2c90d9dcb5237ba",
+      "destination": "brainsnn_video/engine/run_long_horizon.sh",
+      "destination_sha256": "88ef432c36367368a599bfd805278ebaaa7847358c8d6428a2c90d9dcb5237ba",
+      "bytes": 12144,
+      "transformation": "byte_identical_copy"
+    },
+    {
+      "source_project": "crumb-format",
+      "source": "experiments/wavefield_video/v1_backup/wfvideo.py",
+      "source_sha256": "4ad38c609f8dc977e2bb5b574e3f398c6e91d1c4c84c71e91f7f315366fb2039",
+      "destination": "brainsnn_video/engine/v1_backup/wfvideo.py",
+      "destination_sha256": "4ad38c609f8dc977e2bb5b574e3f398c6e91d1c4c84c71e91f7f315366fb2039",
+      "bytes": 11589,
+      "transformation": "byte_identical_copy"
+    }
+  ],
+  "excluded": [
+    "Private correspondence/Hermes session history",
+    "weights/checkpoints and media",
+    "large raw prediction/metric artifacts",
+    "queue/controller scripts and operational infrastructure",
+    "other agents active validation directories"
+  ]
+}

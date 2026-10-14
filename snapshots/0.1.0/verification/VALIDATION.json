@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "recorded_at_utc": "2026-10-14T02:26:04.366420+00:00",
+  "migrated_files": 49,
+  "source_hash_verification": "PASS",
+  "top_level_import_without_torch": "PASS",
+  "native_model_loaded_from_standalone_source": "PASS",
+  "model_and_adapter_import_from_extracted_wheel": "PASS",
+  "tests": {
+    "observation_layer_unittest": 46,
+    "native_unittest": 38,
+    "rollout_pytest": 37,
+    "total": 121
+  },
+  "test_scope": "CPU engineering/contracts, synthetic fixtures, tiny training checks; no model-quality promotion",
+  "registered_benchmark": {
+    "cases": 72,
+    "metric_rows": 864,
+    "fixture_seeds": [
+      730101,
+      730102,
+      730103
+    ],
+    "pass": true,
+    "interpretation": "Engineering RGB-reference retention only; no learned-memory/video claim"
+  },
+  "invalid_subset_benchmark_rejected": true,
+  "benchmark_outputs_location": "temporary directory outside checkout",
+  "package_artifact": {
+    "file": "dist/brainsnn_video-0.1.0-py3-none-any.whl",
+    "bytes": 203444,
+    "sha256": "98df5f3294daa65b39f4e7e999ce4983694b0646d07bc149eef7673779f11f75"
+  },
+  "gpu_execution": false,
+  "pretrained_downloads": false,
+  "dependency_installations": false,
+  "incumbent_source_moves_or_deletes": false,
+  "public_repository_created": false,
+  "remote_configured": false,
+  "git_commit_created": false
+}

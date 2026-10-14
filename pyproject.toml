@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brainsnn-video"
+version = "0.1.1"
+description = "Standalone analytic video assessment and evidence-bounded memory research"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = ["torch>=2.1", "numpy>=1.24"]
+
+[project.optional-dependencies]
+video = ["Pillow>=10", "imageio>=2.30", "imageio-ffmpeg>=0.5", "diffusers>=0.35", "transformers>=4.38"]
+test = ["pytest>=8", "Pillow>=10", "imageio>=2.30", "imageio-ffmpeg>=0.5"]
+
+[project.scripts]
+brainsnn-video = "brainsnn_video.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["brainsnn_video*"]
+
+[tool.setuptools.package-data]
+"brainsnn_video" = ["snapshot.json"]
+"brainsnn_video.engine" = ["*.sh"]
+"brainsnn_video.engine.observation_memory_v2" = ["*.json", "*.md"]
+"brainsnn_video.engine.mary_validation_20261013" = ["*.json", "*.md", "*.sh"]

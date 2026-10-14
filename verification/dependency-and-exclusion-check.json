@@ -1,0 +1,658 @@
+{
+  "status": "PASS",
+  "version": "0.1.1",
+  "scanned_current_files": 114,
+  "scanned_text_bytes": 1173556,
+  "finite_json_files": 29,
+  "finite_json_verified": true,
+  "credential_patterns": 0,
+  "symlinks": 0,
+  "large_files": 0,
+  "excluded_artifacts": 0,
+  "private_path_files": 0,
+  "findings": [],
+  "native_import_graph": [
+    {
+      "file": "brainsnn_video/__init__.py",
+      "absolute_import_roots": [
+        "importlib",
+        "pathlib",
+        "sys"
+      ]
+    },
+    {
+      "file": "brainsnn_video/assess_native.py",
+      "absolute_import_roots": [
+        "argparse",
+        "hashlib",
+        "importlib",
+        "json",
+        "numpy",
+        "pathlib",
+        "platform",
+        "resource",
+        "secrets",
+        "subprocess",
+        "sys",
+        "time",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/__main__.py",
+      "absolute_import_roots": [
+        "argparse",
+        "json",
+        "os",
+        "pathlib",
+        "subprocess",
+        "sys"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/bench_scaling_honest.py",
+      "absolute_import_roots": [
+        "argparse",
+        "json",
+        "kernels2d_smoke",
+        "platform",
+        "statistics",
+        "time",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/ssm_lite.py",
+      "absolute_import_roots": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/ssm_quat.py",
+      "absolute_import_roots": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/video_vae.py",
+      "absolute_import_roots": [
+        "diffusers",
+        "hashlib",
+        "json",
+        "latent_ae",
+        "pathlib",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/wfvideo_quat.py",
+      "absolute_import_roots": [
+        "math",
+        "torch",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/rollout_training.py",
+      "absolute_import_roots": [
+        "torch",
+        "train_compare"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/__init__.py",
+      "absolute_import_roots": []
+    },
+    {
+      "file": "brainsnn_video/engine/long_eval.py",
+      "absolute_import_roots": [
+        "argparse",
+        "hashlib",
+        "imageio",
+        "json",
+        "math",
+        "numpy",
+        "os",
+        "torch",
+        "transformers"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/encode_videos.py",
+      "absolute_import_roots": [
+        "argparse",
+        "data",
+        "hashlib",
+        "imageio",
+        "json",
+        "os",
+        "pathlib",
+        "torch",
+        "video_vae"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/data_occlusion.py",
+      "absolute_import_roots": [
+        "data",
+        "math",
+        "operator",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/render_rollout.py",
+      "absolute_import_roots": [
+        "PIL",
+        "__future__",
+        "argparse",
+        "data",
+        "data_waves",
+        "datetime",
+        "hashlib",
+        "imageio",
+        "json",
+        "latent_ae",
+        "math",
+        "pathlib",
+        "platform",
+        "semantic_metrics",
+        "shutil",
+        "subprocess",
+        "sys",
+        "time",
+        "torch",
+        "train_compare",
+        "v1_backup",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/latent_ae.py",
+      "absolute_import_roots": [
+        "argparse",
+        "data",
+        "data_waves",
+        "json",
+        "pathlib",
+        "sys",
+        "time",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/wfvideo.py",
+      "absolute_import_roots": [
+        "math",
+        "ssm_lite",
+        "ssm_quat",
+        "torch",
+        "wfvideo_quat"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/sanity_check.py",
+      "absolute_import_roots": [
+        "ssm_lite",
+        "torch",
+        "train_compare",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/long_horizon.py",
+      "absolute_import_roots": [
+        "PIL",
+        "argparse",
+        "copy",
+        "data",
+        "dataclasses",
+        "hashlib",
+        "itertools",
+        "json",
+        "math",
+        "numpy",
+        "os",
+        "time",
+        "torch",
+        "video_vae",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/kernels2d_smoke.py",
+      "absolute_import_roots": [
+        "json",
+        "pathlib",
+        "time",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/eval_only.py",
+      "absolute_import_roots": [
+        "argparse",
+        "data_occlusion",
+        "json",
+        "pathlib",
+        "render_rollout",
+        "semantic_metrics",
+        "torch",
+        "train_compare",
+        "train_long",
+        "types"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/recall_probe.py",
+      "absolute_import_roots": [
+        "argparse",
+        "json",
+        "time",
+        "torch",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/data_waves.py",
+      "absolute_import_roots": [
+        "math",
+        "operator",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/train_compare.py",
+      "absolute_import_roots": [
+        "argparse",
+        "data",
+        "data_occlusion",
+        "data_waves",
+        "json",
+        "latent_ae",
+        "math",
+        "pathlib",
+        "semantic_metrics",
+        "sys",
+        "time",
+        "torch",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/train_long.py",
+      "absolute_import_roots": [
+        "argparse",
+        "data",
+        "data_occlusion",
+        "json",
+        "os",
+        "pathlib",
+        "rollout_training",
+        "signal",
+        "time",
+        "torch",
+        "train_compare",
+        "video_vae",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/semantic_metrics.py",
+      "absolute_import_roots": [
+        "data",
+        "math",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/bench_eager_mix.py",
+      "absolute_import_roots": [
+        "argparse",
+        "json",
+        "os",
+        "sys",
+        "time",
+        "torch",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/data.py",
+      "absolute_import_roots": [
+        "operator",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/mary_validation_20261013/test_validation.py",
+      "absolute_import_roots": [
+        "dataclasses",
+        "json",
+        "pathlib",
+        "run_preflight",
+        "tempfile",
+        "torch",
+        "unittest",
+        "validation"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/mary_validation_20261013/__init__.py",
+      "absolute_import_roots": []
+    },
+    {
+      "file": "brainsnn_video/engine/mary_validation_20261013/run_preflight.py",
+      "absolute_import_roots": [
+        "argparse",
+        "imageio",
+        "json",
+        "os",
+        "pathlib",
+        "sys",
+        "time",
+        "torch",
+        "validation"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/mary_validation_20261013/run_cached_ltx_cpu.py",
+      "absolute_import_roots": [
+        "argparse",
+        "hashlib",
+        "importlib",
+        "json",
+        "os",
+        "pathlib",
+        "platform",
+        "signal",
+        "struct",
+        "subprocess",
+        "sys",
+        "time",
+        "torch",
+        "validation"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/mary_validation_20261013/validation.py",
+      "absolute_import_roots": [
+        "dataclasses",
+        "hashlib",
+        "json",
+        "long_horizon",
+        "math",
+        "pathlib",
+        "re",
+        "sys",
+        "torch",
+        "transformers",
+        "video_vae"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/crumb_coherence/metrics.py",
+      "absolute_import_roots": [
+        "__future__",
+        "math",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/crumb_coherence/__init__.py",
+      "absolute_import_roots": []
+    },
+    {
+      "file": "brainsnn_video/engine/crumb_coherence/core.py",
+      "absolute_import_roots": [
+        "__future__",
+        "dataclasses",
+        "torch",
+        "typing"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/crumb_coherence/adapters.py",
+      "absolute_import_roots": [
+        "__future__",
+        "torch",
+        "typing"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/tests/test_long_horizon.py",
+      "absolute_import_roots": [
+        "long_horizon",
+        "math",
+        "os",
+        "pathlib",
+        "subprocess",
+        "sys",
+        "tempfile",
+        "torch",
+        "unittest",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/tests/__init__.py",
+      "absolute_import_roots": []
+    },
+    {
+      "file": "brainsnn_video/engine/tests/test_rollout_training.py",
+      "absolute_import_roots": [
+        "argparse",
+        "copy",
+        "hashlib",
+        "json",
+        "pathlib",
+        "pytest",
+        "rollout_training",
+        "sys",
+        "torch",
+        "train_long",
+        "unittest",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/tests/test_stateful.py",
+      "absolute_import_roots": [
+        "argparse",
+        "eval_only",
+        "json",
+        "os",
+        "pathlib",
+        "render_rollout",
+        "signal",
+        "subprocess",
+        "sys",
+        "tempfile",
+        "torch",
+        "train_long",
+        "unittest",
+        "wfvideo"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/v1_backup/__init__.py",
+      "absolute_import_roots": []
+    },
+    {
+      "file": "brainsnn_video/engine/v1_backup/wfvideo.py",
+      "absolute_import_roots": [
+        "ssm_lite",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/observation.py",
+      "absolute_import_roots": [
+        "dataclasses",
+        "math",
+        "torch",
+        "typing"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/run.py",
+      "absolute_import_roots": [
+        "argparse",
+        "collections",
+        "hashlib",
+        "json",
+        "observation",
+        "pathlib",
+        "platform",
+        "protocol",
+        "resource",
+        "time",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/test_protocol.py",
+      "absolute_import_roots": [
+        "copy",
+        "protocol",
+        "torch",
+        "unittest"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/test_train.py",
+      "absolute_import_roots": [
+        "adapters",
+        "collections",
+        "copy",
+        "dataclasses",
+        "json",
+        "pathlib",
+        "tempfile",
+        "time",
+        "torch",
+        "train",
+        "unittest"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/test_observation.py",
+      "absolute_import_roots": [
+        "observation",
+        "torch",
+        "unittest"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/protocol.py",
+      "absolute_import_roots": [
+        "__future__",
+        "math",
+        "torch",
+        "typing"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/__init__.py",
+      "absolute_import_roots": []
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/train.py",
+      "absolute_import_roots": [
+        "adapters",
+        "argparse",
+        "dataclasses",
+        "hashlib",
+        "json",
+        "observation",
+        "pathlib",
+        "platform",
+        "protocol",
+        "resource",
+        "run",
+        "time",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/test_adapters.py",
+      "absolute_import_roots": [
+        "adapters",
+        "inspect",
+        "observation",
+        "pathlib",
+        "torch",
+        "unittest"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/observation_memory_v2/adapters.py",
+      "absolute_import_roots": [
+        "contextlib",
+        "dataclasses",
+        "importlib",
+        "observation",
+        "pathlib",
+        "sys",
+        "torch",
+        "typing"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/crumb_coherence/tests/test_core.py",
+      "absolute_import_roots": [
+        "crumb_coherence",
+        "math",
+        "os",
+        "sys",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/crumb_coherence/tests/__init__.py",
+      "absolute_import_roots": []
+    },
+    {
+      "file": "brainsnn_video/engine/crumb_coherence/scripts/run_eng1_1080.py",
+      "absolute_import_roots": [
+        "PIL",
+        "__future__",
+        "argparse",
+        "crumb_coherence",
+        "data",
+        "json",
+        "numpy",
+        "os",
+        "run_m0",
+        "shutil",
+        "subprocess",
+        "sys",
+        "time",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/crumb_coherence/scripts/run_m0.py",
+      "absolute_import_roots": [
+        "__future__",
+        "argparse",
+        "crumb_coherence",
+        "data",
+        "imageio",
+        "json",
+        "math",
+        "os",
+        "semantic_metrics",
+        "sys",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/crumb_coherence/scripts/__init__.py",
+      "absolute_import_roots": []
+    }
+  ],
+  "scope": "current source/docs/finite JSON; wheel separately verified; immutable0.1.0 archive original70SHA checks previously passed and root194-file scan passed",
+  "archive_rescan_limitation": "A second whole-tree scan was stopped during an intermittent file read stall; this is not a new full archive scan result",
+  "secret_contents_logged": false
+}

@@ -1,0 +1,68 @@
+{
+  "source_project": "crumb-format",
+  "source_head": "8c1a63bc0e69af10a3e678714e719839f12e97ba",
+  "source_branch": "zeph/fix-kvq-backend",
+  "scope": "Most recent 12 historical video commits; canonical repository retains full history",
+  "commits": [
+    {
+      "commit": "8c1a63bc0e69af10a3e678714e719839f12e97ba",
+      "committed_at": "2026-10-02T23:31:28-04:00",
+      "subject": "auto-sync artifacts 2026-10-02 23:31"
+    },
+    {
+      "commit": "05b46f8a821f62d464ab9aaf6b5fe0febd9c6e1d",
+      "committed_at": "2026-10-02T18:09:23-04:00",
+      "subject": "wavefield: kv_quant backend fix - pytorch/static_6 on sm89"
+    },
+    {
+      "commit": "bf3f9122827c9fdba7f4b8067e0aaa150a296d40",
+      "committed_at": "2026-10-02T15:29:29-04:00",
+      "subject": "auto-sync artifacts 2026-10-02 15:29"
+    },
+    {
+      "commit": "2feb2c5b1a77695f55b4e1eea688186dbc1004ac",
+      "committed_at": "2026-10-02T14:04:41-04:00",
+      "subject": "wavefield: ll_w16_attns2 receipt \u2014 _A_attn_s2 closed (mse 0.01088, /copylast 0.633); old suite 12/12"
+    },
+    {
+      "commit": "29f96d8f4f809285f4b558bbdd7b72ebb97a6b36",
+      "committed_at": "2026-10-01T10:41:54-04:00",
+      "subject": "wavefield: c01s 180 s + c01t 300 s receipts \u2014 prompt-chunk patch GPU-proven; first 5-min LongLive fp8 clip (#84)"
+    },
+    {
+      "commit": "99703f5222223a22b26ba2bd9518fa49e090bc19",
+      "committed_at": "2026-10-01T10:41:50-04:00",
+      "subject": "wavefield: wave-2 receipts \u2014 c01y fastprompt s11 replica (behavior replicates; magnitude seed-sensitive) + c01x_1 OPSD-orig first clip (#88)"
+    },
+    {
+      "commit": "9f2472d76419eb298f4f5e92f7bff2e7fdb33489",
+      "committed_at": "2026-10-01T10:41:46-04:00",
+      "subject": "wavefield: c01ad_1 OPSD 633 receipt \u2014 2.6-min clip (flow 1.836, flat vs 477); + c01ab contact companion (#90)"
+    },
+    {
+      "commit": "57e4b826f13fed2f8391ce8dc03bec152b84c990",
+      "committed_at": "2026-10-01T10:41:41-04:00",
+      "subject": "wavefield: c01ae receipt - journey-prompt probes (30s/10s fp8; nofollow travel-class) + bf16 30s OOM boundary (#91)"
+    },
+    {
+      "commit": "4685b6b94acb8e823f9e45ea1fc8e12345b1df9c",
+      "committed_at": "2026-10-01T10:38:36-04:00",
+      "subject": "chore: bump trunk to v1.6.0 (unreleased) to unblock receipt-batch merges (#95)"
+    },
+    {
+      "commit": "9d2ce102ed0d83ad91ff75bdedb32aa1e8fbb9e6",
+      "committed_at": "2026-09-30T15:52:37-04:00",
+      "subject": "video LLM deeper research: 2026-09 landscape sweep + ranked experiment cards (#93)"
+    },
+    {
+      "commit": "9edb45e28dc52038969d055c7a731349bdf99fca",
+      "committed_at": "2026-09-30T12:04:38-04:00",
+      "subject": "studio v0.1 + journey probes: c01ae receipts, i2v chain probe (#92)"
+    },
+    {
+      "commit": "b17f387d80924616657edf7c283cee26969e3608",
+      "committed_at": "2026-09-29T23:43:33-04:00",
+      "subject": "Merge pull request #89 from XioAISolutions/zeph/ll-fastbreak-20260930"
+    }
+  ]
+}

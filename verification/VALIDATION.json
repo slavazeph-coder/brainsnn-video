@@ -1,0 +1,98 @@
+{
+  "status": "QA_WITH_KNOWN_INHERITED_ANALYTIC_FAILURES",
+  "version": "0.1.1",
+  "recorded_at_utc": "2026-10-14T03:11:19.207210+00:00",
+  "migrated_files": 85,
+  "source_hash_verification": "PASS",
+  "all_tests_passed": false,
+  "tests": {
+    "observation_layer_unittest": {
+      "passed": 46,
+      "failed": 0
+    },
+    "native_unittest": {
+      "passed": 38,
+      "failed": 0
+    },
+    "rollout_pytest": {
+      "passed": 37,
+      "failed": 0
+    },
+    "mary_contract_unittest": {
+      "passed": 18,
+      "failed": 0
+    },
+    "analytic_pytest": {
+      "passed": 28,
+      "failed": 3,
+      "canonical_same_failures": true
+    },
+    "total_passed": 167,
+    "total_failed": 3
+  },
+  "known_failure_receipt": "verification/analytic_inherited_failures_v0.1.1.json",
+  "positive_cli_log_sha256": "da58cb56ff458934d8f1b0107d0646db8c3f7c60a571ba494a8b63acdbd122f3",
+  "analytic_pytest_log_sha256": "8e55a8aa06dcbd6f0b6c0959e6dbd3691e72ef3d4104b1f932def3d05b389a48",
+  "test_scope": "CPU engineering/contracts and tiny synthetic fixtures, not product quality or architecture superiority",
+  "package_artifact": {
+    "filename": "dist/brainsnn_video-0.1.1-py3-none-any.whl",
+    "bytes": 284364,
+    "sha256": "5ca82883c567c9e1c01455e0d4bb8102fbb6fde82037a8c359542c6f678ca404",
+    "extracted_package_members_byte_equal_current_source": true
+  },
+  "import_and_portable_assessor_validation": "PASS",
+  "source_native_grid_smoke": "verification/analytic_native_grid_smoke_v0.1.1.json",
+  "preflight_fixture_smoke": {
+    "status": "PASS",
+    "receipt_sha256": "57389ad4134b25fa666786bcde61e6e23635eb46d6f12e5d60f697de8b0f083a",
+    "pretrained_evidence": false
+  },
+  "registered_benchmark": {
+    "basis": "retained0.1.0 source-identical benchmark replay, not rerun0.1.1",
+    "cases": 72,
+    "metric_rows": 864,
+    "pass": true,
+    "scope": "observed RGB reference engineering only"
+  },
+  "actual_cached_pretrained_cpu_encoder": {
+    "receipt": "evidence/pretrained_ltx_cpu_encoder/receipt.json",
+    "backend": "ltx",
+    "raw_shape": [
+      1,
+      297,
+      3,
+      32,
+      32
+    ],
+    "cuts": [
+      33,
+      129,
+      289
+    ],
+    "pass": true,
+    "max_past_delta": 1.3709068298339844e-06,
+    "pretrained_weights_verified": true,
+    "GPU_evidence": false,
+    "production_preflight_complete": false,
+    "rss_measurement": "sampled outer ps peak; .25-second polling, not continuous max"
+  },
+  "native_720_owned_gate": "FAIL",
+  "encoded_native_motion_gate": "FAIL",
+  "human_review": "pending",
+  "independent_stranger_clips_verified": 0,
+  "verified_paid_orders": 0,
+  "v0.1.0_archive": {
+    "path": "snapshots/0.1.0",
+    "bound_files": 70,
+    "all_sha256_checks_pass": true,
+    "original_SHA256SUMS_sha256": "9a5b15215eba3086bbbe5fa6d004534c28fcc667c354114ea77fb4f072bf2aaf"
+  },
+  "gpu_execution_by_separation": false,
+  "pretrained_downloads": false,
+  "dependency_installations": false,
+  "incumbent_source_moves_or_deletes": false,
+  "engine_tuning": false,
+  "public_repository_created_by_this_agent": false,
+  "remote_configured_by_this_agent": false,
+  "public_fresh_clone_verification": "pending root publication; extracted wheel already verified"
+}

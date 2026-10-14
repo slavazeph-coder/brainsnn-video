@@ -1,0 +1,246 @@
+{
+  "status": "PASS",
+  "native_import_graph": [
+    {
+      "file": "brainsnn_video/engine/__init__.py",
+      "native_imports": [],
+      "optional_or_external_imports": []
+    },
+    {
+      "file": "brainsnn_video/engine/bench_eager_mix.py",
+      "native_imports": [
+        "wfvideo"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/bench_scaling_honest.py",
+      "native_imports": [
+        "kernels2d_smoke"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/data.py",
+      "native_imports": [],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/data_occlusion.py",
+      "native_imports": [
+        "data"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/data_waves.py",
+      "native_imports": [],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/encode_videos.py",
+      "native_imports": [
+        "data",
+        "video_vae"
+      ],
+      "optional_or_external_imports": [
+        "imageio",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/eval_only.py",
+      "native_imports": [
+        "data_occlusion",
+        "render_rollout",
+        "semantic_metrics",
+        "train_compare",
+        "train_long"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/kernels2d_smoke.py",
+      "native_imports": [],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/latent_ae.py",
+      "native_imports": [
+        "data",
+        "data_waves"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/long_eval.py",
+      "native_imports": [],
+      "optional_or_external_imports": [
+        "imageio",
+        "numpy",
+        "torch",
+        "transformers"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/long_horizon.py",
+      "native_imports": [
+        "data",
+        "video_vae",
+        "wfvideo"
+      ],
+      "optional_or_external_imports": [
+        "PIL",
+        "numpy",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/recall_probe.py",
+      "native_imports": [
+        "wfvideo"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/render_rollout.py",
+      "native_imports": [
+        "data",
+        "data_waves",
+        "latent_ae",
+        "semantic_metrics",
+        "train_compare",
+        "v1_backup",
+        "wfvideo"
+      ],
+      "optional_or_external_imports": [
+        "PIL",
+        "imageio",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/rollout_training.py",
+      "native_imports": [
+        "train_compare"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/sanity_check.py",
+      "native_imports": [
+        "ssm_lite",
+        "train_compare",
+        "wfvideo"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/semantic_metrics.py",
+      "native_imports": [
+        "data"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/ssm_lite.py",
+      "native_imports": [],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/ssm_quat.py",
+      "native_imports": [],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/train_compare.py",
+      "native_imports": [
+        "data",
+        "data_occlusion",
+        "data_waves",
+        "latent_ae",
+        "semantic_metrics",
+        "wfvideo"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/train_long.py",
+      "native_imports": [
+        "data",
+        "data_occlusion",
+        "rollout_training",
+        "train_compare",
+        "video_vae",
+        "wfvideo"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/video_vae.py",
+      "native_imports": [
+        "latent_ae"
+      ],
+      "optional_or_external_imports": [
+        "diffusers",
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/wfvideo.py",
+      "native_imports": [
+        "ssm_lite",
+        "ssm_quat",
+        "wfvideo_quat"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    },
+    {
+      "file": "brainsnn_video/engine/wfvideo_quat.py",
+      "native_imports": [
+        "wfvideo"
+      ],
+      "optional_or_external_imports": [
+        "torch"
+      ]
+    }
+  ],
+  "finite_json_verified": true,
+  "excluded_binary_artifacts_found": false,
+  "credential_shaped_literals_found": false,
+  "source_tree_file_count": 69
+}
